@@ -5,33 +5,16 @@
   (e ::= x v (fun f (x) e) (e e) (+ e e) (ref e) (! e) (:= e e)) ; expr (incomplete)
   (x f ::= variable-not-otherwise-mentioned)
   (a ::= integer) ; address
-<<<<<<< Updated upstream
   (σ ::= · (↦ a h)) ; heaps (incomplete)
   (h ::= (λ (x) e) v) ; heap values
   (β ::= · (↦ a h)) ; blame sets (incomplete)
   (b ::= ⟨a r⟩ L) ; blame elems (incomplete)
-  (L ::= *) ; labelled types (incomplete)
-=======
-  
-  (σ ::= · (↦ a h)) ; heaps (incomplete)
-  (h ::= (λ (x) e) v) ; heap values
-  
-  (β ::= · (↦ a h)) ; blame sets (incomplete)
-  (b ::= L) ; blame elems (incomplete)
-
   (T ::= int (→ T T) * (ref T)) ; types
   (L ::= int∈ (→q L L) (refq L) * ⊥l) ; labelled types 
-
-  
->>>>>>> Stashed changes
   (v ::= a integer) ; values
   (E ::= hole (E e) (v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (⇒ ) ; E (incomplete)
   #:binding-forms
   (λ (f x) e #:refers-to x))) ;; not sure if this is correct
-
-
-
-
 
 (default-language tglc)
 
