@@ -5,10 +5,10 @@
   (e ::= x v (fun f (x) e) (e e) (+ e e) (ref e) (! e) (:= e e)) ; expr (incomplete)
   (x f ::= variable-not-otherwise-mentioned)
   (a ::= integer) ; address
-  (σ ::= · (\|-> a h)) ; heaps (incomplete)
+  (σ ::= · (↦ a h)) ; heaps (incomplete)
   (h ::= (λ (x) e) v) ; heap values
-  (β ::= · (\|-> a h)) ; blame sets (incomplete)
-  (b ::= L) ; blame elems (incomplete)
+  (β ::= · (↦ a h)) ; blame sets (incomplete)
+  (b ::= ⟨a r⟩ L) ; blame elems (incomplete)
   (L ::= *) ; labelled types (incomplete)
   (v ::= a integer) ; values
   (E ::= hole (E e) (v E) (+ E e) (+ v E) (ref E) (! E) (:= E e)) ; E (incomplete)
