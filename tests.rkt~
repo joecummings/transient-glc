@@ -1,6 +1,5 @@
 #lang racket
 (require redex)
-(require rackunit)
 
 (require "main.rkt")
 
