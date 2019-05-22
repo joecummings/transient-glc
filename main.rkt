@@ -60,10 +60,10 @@
 
 (define-metafunction tglc
   throw-on-lambda : h -> v
-  [(throw-on-lambda v) h]
+  [(throw-on-lambda v) v]
   [(throw-on-lambda any_1) ,(error 'throw-on-lambda "found a lambda: ~e" (term any_1))])
 
-(test-equal (term (throw-on-lambda 0)) 0)
+(test-equal (term (throw-on-lambda 1)) 1)
 (check-exn exn:fail? (λ () (term (throw-on-lambda (λ (x) x)))) "found a lambda")
 
 (define-metafunction tglc
