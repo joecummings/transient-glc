@@ -6,7 +6,7 @@
   (e ::= x v (fun f (x) e) (e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e)) ; expr (incomplete)
   (cast-e := (⇒ T T) (⇔ T T))
   (x f ::= variable-not-otherwise-mentioned)
-  (a ::= natural) ; address
+  (a ::= (addr natural)) ; address
   (σ ::= · ((a h) ... σ)) ; heaps (incomplete)
   (h ::= (λ (x) e) v) ; heap values
   (β ::= · ((a b) ... β)) ; blame sets (incomplete)
@@ -39,24 +39,36 @@
   [(cast (⇒ (any_1 any_2))) (⊥ l)])
 
 (define-metafunction tglc
-  hastype : σ v S -> #t or #f
-  [(hastype (σ n int)) #t]
-  [(hastype (σ a int)) #f]
-  [(hastype (σ v *)) #t]
-  [(hastype (σ n →)) #f]
-  [(hastype (σ a →)) ,(if (term (value? (lookup σ a))) #f #t)]
-  [(hastype (σ n ref)) #f]
-  [(hastype (σ a ref)) ,(if (term (value? (lookup σ a))) #t #f)])
-
-(test-equal (term (hastype ((0 42) ·) 1 int)) #t)
+  value? : h -> #t or #f
+  [(value? v) #t]
+  [(value? h) #f])
 
 (define-metafunction tglc
-  lookup : σ a -> v
+  lookup : σ a -> h
   [(lookup ((a_1 h_1) ... (a h) (a_2 h_2) ... σ) a) h]
   [(lookup any_1 any_2) ,(error 'lookup "not found: ~e" (term any_1))])
 
-(test-equal (term (lookup ((0 1) ·) 0)) 1)
-(check-exn exn:fail? (λ () (term (lookup ((0 (λ (x) x)) (1 27) ·) 3))) "not found")
+(define-metafunction tglc
+  hastype : σ v S -> #t or #f
+  [(hastype σ n int) #t]
+  [(hastype σ a int) #f]
+  [(hastype σ a *) #t]
+  [(hastype σ n *) #t]
+  [(hastype σ a →) ,(if (term (value? (lookup σ a))) #f #t)]
+  [(hastype σ n →) #f]
+  [(hastype σ a ref) ,(if (term (value? (lookup σ a))) #t #f)]
+  [(hastype σ n ref) #f])
+
+(test-equal (term (lookup (((addr 0) (λ (x) 1)) ·) (addr 0))) (term (λ (x) 1)))
+  
+(test-equal (term (hastype (((addr 0) 42) ·) 38 *)) #t)
+(test-equal (term (hastype (((addr 0) 42) ·) (addr 0) ref)) #t)
+(test-equal (term (hastype (((addr 0) 42) ·) 42 ref)) #f)
+(test-equal (term (hastype (((addr 0) (λ (x) x)) ·) (addr 0) →)) #t)
+
+
+(test-equal (term (lookup (((addr 0) 1) ·) (addr 0))) 1)
+(check-exn exn:fail? (λ () (term (lookup (((addr 0) (λ (x) x)) ((addr 1) 27) ·) (addr 3)))) "not found")
 
 (define-metafunction tglc
   throw-on-lambda : h -> v
@@ -88,7 +100,8 @@
   )
 
 (test-judgment-holds
-   (→ ((! 1) ((0 (λ (x) x)) (1 27) ·)) (27 ((0 (λ (x) x)) (1 27) ·))))
+   (→ ((! (addr 1)) (((addr 0) (λ (x) x)) ((addr 1) 27) ·))
+      (27 (((addr 0) (λ (x) x)) ((addr 1) 27) ·))))
 (test-judgment-holds
    (→ ((+ 1 2) ·) (3 ·)))
 
