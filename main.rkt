@@ -22,13 +22,19 @@
 
 (define-metafunction tglc
   lookup : σ a -> v
-  [(lookup ((a_1 h_1) ... (a v) (a_2 h_2) ... σ) a) v]
-  [(lookup ((a_1 h_1) ... (a h) (a_2 h_2) ... σ) a) ,(error 'lookup "not a value: ~e" (term a))]
+  [(lookup ((a_1 h_1) ... (a h) (a_2 h_2) ... σ) a) h]
   [(lookup any_1 any_2) ,(error 'lookup "not found: ~e" (term any_1))])
 
 (test-equal (term (lookup ((0 1) ·) 0)) 1)
-(check-exn exn:fail? (λ () (term (lookup ((0 (λ (x) x)) (1 27) ·) 0))) "not a value")
 (check-exn exn:fail? (λ () (term (lookup ((0 (λ (x) x)) (1 27) ·) 3))) "not found")
+
+(define-metafunction tglc
+  throw-on-lambda : h -> v
+  [(throw-on-lambda v) h]
+  [(throw-on-lambda any_1) ,(error 'throw-on-lambda "found a lambda: ~e" (term any_1))])
+
+(test-equal (term (throw-on-lambda 0)) 0)
+(check-exn exn:fail? (λ () (term (throw-on-lambda (λ (x) x)))) "found a lambda")
 
 (define-metafunction tglc
   plus : n_1 n_2 -> n
@@ -41,7 +47,7 @@
   #:mode (→ I O)
   #:contract (→ (e σ) (e σ)) ; one state -> different state
 
-  [(where v_answer (lookup σ a))
+  [(where v_answer (throw-on-lambda (lookup σ a))) 
    -----------------------------"deref"
    (→ ((! a) σ) (v_answer σ))]
 
