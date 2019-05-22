@@ -1,6 +1,6 @@
 #lang racket
-(require redex)
 (require rackunit)
+(require redex)
 
 (define-language tglc
   (e ::= x v (fun f (x) e) (e e) (+ e e) (ref e) (! e) (:= e e)) ; expr (incomplete)
@@ -14,8 +14,8 @@
   (L ::= intq (→q L L) (refq L) * ⊥l) ; labelled types 
   (v ::= a natural) ; values
   (E ::= hole (E e) (v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (⇒ ) ; E (incomplete)
-  #:binding-forms
-  (λ (f x) e #:refers-to x))) ;; not sure if this is correct
+     #:binding-forms
+     (λ (f x) e #:refers-to x))) ;; not sure if this is correct
 
 (default-language tglc)
 
@@ -25,20 +25,24 @@
   [(lookup ((a_1 h_1) ... (a h) (a_2 h_2) ... σ) a) ,(error 'lookup "not a value: ~e" (term a))]
   [(lookup any_1 any_2) ,(error 'lookup "not found: ~e" (term any_1))])
 
+(test-equal (term (lookup ((0 1) ·) 0)) 1)
+(check-exn exn:fail? (λ () (term (lookup ((0 (λ (x) x)) (1 27) ·) 0))) "not a value")
+(check-exn exn:fail? (λ () (term (lookup ((0 (λ (x) x)) (1 27) ·) 3))) "not found")
+
 (define-judgment-form tglc
   #:mode (→ I O)
   #:contract (→ (e σ) (e σ)) ; one state -> different state
 
   [(where v_answer (lookup σ a))
-    -------------------------------"deref"
-    (→ ((! a) σ) (v_answer σ))]
+   -------------------------------"deref"
+   (→ ((! a) σ) (v_answer σ))]
 
   )
 
 (test-judgment-holds
- (→ ((! 1) ((0 (λ (x) x)) (1 27) ·)) (27 ((0 (λ (x) x)) (1 27) ·))))
+   (→ ((! 1) ((0 (λ (x) x)) (1 27) ·)) (27 ((0 (λ (x) x)) (1 27) ·))))
 
-;(check-exn (term (lookup ((0 (λ (x) x)) (1 27) ·) 0)))
+
 
 
 

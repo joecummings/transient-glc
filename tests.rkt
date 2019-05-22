@@ -1,6 +1,6 @@
 #lang racket
+;(require rackunit)
 (require redex)
-(require rackunit)
 
 (require "main.rkt")
 
@@ -17,6 +17,10 @@
 (module+ test
   (test-equal (redex-match? tglc a 123123123) #t)
   (test-equal (redex-match? tglc v 123123) #t))
+
+;(module+ test
+  ;(check-exn exn:fail? (λ () (term (lookup ((0 (λ (x) x)) (1 27) ·) 0))) "not a value")
+ ; (check-exn exn:fail? (λ () (term (lookup ((0 (λ (x) x)) (1 27) ·) 3))) "not found"))
 
 (module+ test
   (test-results))
