@@ -23,7 +23,6 @@
 
 (default-language tglc)
 
-#;
 (define-metafunction tglc
   cast : cast-e -> L
   [(cast (⇒ * *)) *]
@@ -66,7 +65,6 @@
 (test-equal (term (hastype (((addr 0) 42) ·) 42 ref)) #f)
 (test-equal (term (hastype (((addr 0) (λ (x) x)) ·) (addr 0) →)) #t)
 
-
 (test-equal (term (lookup (((addr 0) 1) ·) (addr 0))) 1)
 (check-exn exn:fail? (λ () (term (lookup (((addr 0) (λ (x) x)) ((addr 1) 27) ·) (addr 3)))) "not found")
 
@@ -91,35 +89,35 @@
   [(replace (any_1 (any_2 v))) ,(error 'replace "address not found: ~e" (term any_2))]
   [(replace (any_1 (any_2 h))) ,(error ('replace "expected a value, given: ~e" (term h)))])
 
-(test-equal (term (replace ((0 1) ·) (0 0))) (term ((0 0) ·)))
-(check-exn exn:fail? (λ () (term (replace ((0 1) ·) (1 1)))) "address not found")
-(check-exn exn:fail? (λ () (term (replace ((0 1) ·) (1 (λ (x) x))))) "expected a value")
+(test-equal (term (replace (((addr 0) 0) ·) ((addr 0) 3))) (term (((addr 0) 3) ·)))
+(check-exn exn:fail? (λ () (term (replace (((addr 0) 1) ·) ((addr 1) 1)))) "address not found")
+(check-exn exn:fail? (λ () (term (replace (((addr 0) 1) ·) ((addr 1) (λ (x) x))))) "expected a value")
 
 (define-judgment-form tglc
-  #:mode (→ I O)
-  #:contract (→ (e σ) (e σ)) ; one state -> different state
+  #:mode (-→ I O)
+  #:contract (-→ (e σ) (e σ)) ; one state -> different state
 
   [(where v_answer (throw-on-lambda (lookup σ a))) 
    ------------------------------------------------"deref"
-   (→ ((! a) σ) (v_answer σ))]
+   (-→ ((! a) σ) (v_answer σ))]
 
   [(where v_prime (throw-on-lambda (lookup σ a)))
    -----------------------------------------------"assign"
-   (→ ((:= a v) σ) (0 (replace σ (a v))))]
+   (-→ ((:= a v) σ) (0 (replace σ (a v))))]
 
   [(where n_prime (plus n_1 n_2))
    --------------------------------"add"
-   (→ ((+ n_1 n_2) σ) (n_prime σ))]
+   (-→ ((+ n_1 n_2) σ) (n_prime σ))]
 
   )
 
 (test-judgment-holds
-   (→ ((! (addr 1)) (((addr 0) (λ (x) x)) ((addr 1) 27) ·))
+   (-→ ((! (addr 1)) (((addr 0) (λ (x) x)) ((addr 1) 27) ·))
       (27 (((addr 0) (λ (x) x)) ((addr 1) 27) ·))))
 (test-judgment-holds
-   (→ ((+ 1 2) ·) (3 ·)))
+   (-→ ((+ 1 2) ·) (3 ·)))
 (test-judgment-holds
-   (→ ((:= 0 3) ((0 0) ·)) (0 ((0 3) ·))))
+   (-→ ((:= (addr 0) 3) (((addr 0) 0) ·)) (0 (((addr 0) 3) ·))))
 
 
 
