@@ -19,7 +19,7 @@
   (n ::= natural) ; naturals
   (E ::= hole (E e) (v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (⇒ ) ; E (incomplete)
      #:binding-forms
-     (λ (f x) e #:refers-to x))) ;; not sure if this is correct
+     (λ (x) e #:refers-to x))) ;; not sure if this is correct
 
 (default-language tglc)
 
@@ -93,10 +93,31 @@
 (check-exn exn:fail? (λ () (term (replace (((addr 0) 1) ·) ((addr 1) 1)))) "address not found")
 (check-exn exn:fail? (λ () (term (replace (((addr 0) 1) ·) ((addr 1) (λ (x) x))))) "expected a value")
 
+(define-metafunction tglc
+  add-to-address : a -> a
+  [(add-to-address (addr n)) (addr (plus n 1))])
+
+(define-metafunction tglc
+  fresh : σ -> a
+  [(fresh ((a_1 h_1) ... (a h) ·)) (add-to-address a)])
+
+(test-equal (term (fresh (((addr 5) 1) ·))) (term (addr 6)))
+
+(define-metafunction tglc
+  extend : σ (a v) -> σ
+  [(extend ((a_1 h_1) ... ·) (a v)) ((a v) (a_1 h_1) ... ·)])
+
+(test-equal (term (extend (((addr 0) 1) ·) ((addr 1) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
+(test-equal (term (extend (((addr 0) 1) ·) ((fresh (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
+
 (define-judgment-form tglc
   #:mode (-→ I O)
   #:contract (-→ (e σ) (e σ)) ; one state -> different state
 
+  [(where a (fresh σ))
+   ----------------------------- "new"
+   (-→ ((ref v) σ) (a (extend σ (a v))))]
+  
   [(where v_answer (throw-on-lambda (lookup σ a))) 
    ------------------------------------------------"deref"
    (-→ ((! a) σ) (v_answer σ))]
