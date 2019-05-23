@@ -114,6 +114,10 @@
   #:mode (-→ I O)
   #:contract (-→ (e σ) (e σ)) ; one state -> different state
 
+;  [(where h_answer (lookup σ a))
+;   -----------------------------"subst"
+;   (-→ ((a v) σ) ( σ))]
+  
   [(where a (fresh σ))
    ----------------------------- "new"
    (-→ ((ref v) σ) (a (extend σ (a v))))]
@@ -139,6 +143,8 @@
    (-→ ((+ 1 2) ·) (3 ·)))
 (test-judgment-holds
    (-→ ((:= (addr 0) 3) (((addr 0) 0) ·)) (0 (((addr 0) 3) ·))))
+(test-judgment-holds
+   (-→ ((ref 3) (((addr 0) 0) ·)) ((fresh (((addr 0) 0) ·)) (((addr 1) 3) ((addr 0) 0) ·))))
 
 
 
