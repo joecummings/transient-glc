@@ -85,16 +85,30 @@
 (test-equal (term (plus 1 2)) 3)
 (test-equal (term (plus 0 0)) 0)
 
+(define-metafunction tglc
+  replace : σ (a v_1) -> σ
+  [(replace ((a_1 h_1) ... (a v) (a_2 h_2) ... σ) (a v_1)) ((a_1 h_1) ... (a v_1) (a_2 h_2) ... σ)]
+  [(replace (any_1 (any_2 v))) ,(error 'replace "address not found: ~e" (term any_2))]
+  [(replace (any_1 (any_2 h))) ,(error ('replace "expected a value, given: ~e" (term h)))])
+
+(test-equal (term (replace ((0 1) ·) (0 0))) (term ((0 0) ·)))
+(check-exn exn:fail? (λ () (term (replace ((0 1) ·) (1 1)))) "address not found")
+(check-exn exn:fail? (λ () (term (replace ((0 1) ·) (1 (λ (x) x))))) "expected a value")
+
 (define-judgment-form tglc
   #:mode (→ I O)
   #:contract (→ (e σ) (e σ)) ; one state -> different state
 
   [(where v_answer (throw-on-lambda (lookup σ a))) 
-   -----------------------------"deref"
+   ------------------------------------------------"deref"
    (→ ((! a) σ) (v_answer σ))]
 
+  [(where v_prime (throw-on-lambda (lookup σ a)))
+   -----------------------------------------------"assign"
+   (→ ((:= a v) σ) (0 (replace σ (a v))))]
+
   [(where n_prime (plus n_1 n_2))
-   -------------------------------- "add"
+   --------------------------------"add"
    (→ ((+ n_1 n_2) σ) (n_prime σ))]
 
   )
@@ -104,6 +118,8 @@
       (27 (((addr 0) (λ (x) x)) ((addr 1) 27) ·))))
 (test-judgment-holds
    (→ ((+ 1 2) ·) (3 ·)))
+(test-judgment-holds
+   (→ ((:= 0 3) ((0 0) ·)) (0 ((0 3) ·))))
 
 
 
