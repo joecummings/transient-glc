@@ -121,7 +121,7 @@
 (define-metafunction tglc
   throw-on-v : h -> h
   [(throw-on-v v) ,(error 'throw-on-v "expected a λ, given a ~e" (term v))]
-  [(throw-on-v (λ (x) e)) (λ (x) e)])
+  [(throw-on-v h) h])
 
 (test-equal (term (throw-on-v (λ (x) x))) (term (λ (x) x)))
 (check-exn exn:fail? (λ () (term (throw-on-v 4))) "expected a λ, given")
@@ -129,7 +129,6 @@
 (define-metafunction tglc
   extract-body : h -> e
   [(extract-body (λ (x) e)) e]
-  [(extract-body (λ (n) e)) e]
   [(extract-body any_1) ,(error 'extract-body "expected a λ, given: ~e" (term any_1))])
 
 (define-judgment-form tglc
@@ -143,8 +142,7 @@
   [(where func (throw-on-v (lookup σ a)))
    --------------------------------------------"app"
    (-→ ((app a v) σ) ((substitute (extract-body func) (extract-argument func) v) σ))]
-;
-  ;(substitute func (extract-argument func) v)
+
   [(where a (fresh σ))
    ----------------------------- "new"
    (-→ ((ref v) σ) (a (extend σ (a v))))]
