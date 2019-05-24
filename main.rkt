@@ -135,8 +135,8 @@
   #:contract (-→ (e σ) (e σ)) ; one state -> different state
 
   [(where h_answer (throw-on-v (lookup σ a)))
-   --------------------------------------------"subst"
-   (-→ ((app a v) σ) ((extract-body (substitute h_answer (extract-argument h_answer) v)) σ))]
+   --------------------------------------------"app"
+   (-→ ((app a v) σ) ((substitute (extract-body h_answer) (extract-argument h_answer) v) σ))]
   
   [(where a (fresh σ))
    ----------------------------- "new"
@@ -168,7 +168,7 @@
        ((addr 1) (((addr 1) 3) ((addr 0) 0) ·))))
 (test-judgment-holds
  (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·))
-     ((λ (4) 4) (((addr 0) (λ (x) x)) ·))))
+     (4 (((addr 0) (λ (x) x)) ·))))
 
 
 
