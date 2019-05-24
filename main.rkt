@@ -3,7 +3,7 @@
 (require redex)
 
 (define-language tglc
-  (e ::= x v (fun f (x) e) (e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e)) ; expr (incomplete)
+  (e ::= x v (fun f (x) e) (app e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e)) ; expr (incomplete)
   (cast-e := (⇒ T T) (⇔ T T))
   (x f ::= variable-not-otherwise-mentioned)
   (a ::= (addr natural)) ; address
@@ -17,7 +17,7 @@
   (q ::= l ∈) ; labelled types 
   (v ::= a n) ; values
   (n ::= natural) ; naturals
-  (E ::= hole (E e) (v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (⇒ ) ; E (incomplete)
+  (E ::= hole (app E e) (app v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (⇒ ) ; E (incomplete)
      #:binding-forms
      (λ (x) e #:refers-to x))) ;; not sure if this is correct
 
@@ -110,13 +110,33 @@
 (test-equal (term (extend (((addr 0) 1) ·) ((addr 1) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
 (test-equal (term (extend (((addr 0) 1) ·) ((fresh (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
 
+(define-metafunction tglc
+  extract-argument : h -> x
+  [(extract-argument (λ (x) e)) x])
+
+(test-equal (term (extract-argument (λ (x) x))) (term x))
+(test-equal (term (extract-argument (λ (y) y))) (term y))
+
+(define-metafunction tglc
+  throw-on-v : h -> h
+  [(throw-on-v v) ,(error 'throw-on-v "expected a λ, given a ~e" (term v))]
+  [(throw-on-v h) h])
+
+(test-equal (term (throw-on-v (λ (x) x))) (term (λ (x) x)))
+(check-exn exn:fail? (λ () (term (throw-on-v 4))) "expected a λ, given")
+
+(define-metafunction tglc
+  extract-body : h -> e
+  [(extract-body (λ (x) e)) e]
+  [(extract-body any_1) ,(error 'extract-body "expected a λ, given: ~e" (term any_1))])
+
 (define-judgment-form tglc
   #:mode (-→ I O)
   #:contract (-→ (e σ) (e σ)) ; one state -> different state
 
-;  [(where h_answer (lookup σ a))
-;   -----------------------------"subst"
-;   (-→ ((a v) σ) ( σ))]
+  [(where h_answer (throw-on-v (lookup σ a)))
+   --------------------------------------------"subst"
+   (-→ ((app a v) σ) ((extract-body (substitute h_answer (extract-argument h_answer) v)) σ))]
   
   [(where a (fresh σ))
    ----------------------------- "new"
@@ -144,7 +164,11 @@
 (test-judgment-holds
    (-→ ((:= (addr 0) 3) (((addr 0) 0) ·)) (0 (((addr 0) 3) ·))))
 (test-judgment-holds
-   (-→ ((ref 3) (((addr 0) 0) ·)) ((fresh (((addr 0) 0) ·)) (((addr 1) 3) ((addr 0) 0) ·))))
+   (-→ ((ref 3) (((addr 0) 0) ·))
+       ((addr 1) (((addr 1) 3) ((addr 0) 0) ·))))
+(test-judgment-holds
+ (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·))
+     ((λ (4) 4) (((addr 0) (λ (x) x)) ·))))
 
 
 
