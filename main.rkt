@@ -3,13 +3,13 @@
 (require redex)
 
 (define-language tglc
-  (e ::= x v (fun f (x) e) (app e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e)) ; expr (incomplete)
+  (e ::= x v (fun f (x) e) (app e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e)) ; expr
   (cast-e := (⇒ T T) (⇔ T T))
   (x f ::= variable-not-otherwise-mentioned)
   (a ::= (addr natural)) ; address
-  (σ ::= · ((a h) ... σ)) ; heaps (incomplete)
+  (σ ::= · ((a h) ... σ)) ; heaps
   (h ::= (λ (x) e) v) ; heap values
-  (β ::= · ((a b) ... β)) ; blame sets (incomplete)
+  (β ::= · ((a b) ... β)) ; blame sets
   (b ::= (a r) L) ; blame elems
   (T ::= int (→ T T) * (ref T)) ; types
   (L ::= (int q) (→ q L L) (ref q L) * (⊥ l)) ; labelled types
@@ -99,20 +99,21 @@
 
 (define-metafunction tglc
   fresh : σ -> a
-  [(fresh ((a_1 h_1) ... (a h) ·)) (add-to-address a)])
+  [(fresh ((a h) (a_1 h_1) ... ·)) (add-to-address a)])
 
 (test-equal (term (fresh (((addr 5) 1) ·))) (term (addr 6)))
 
 (define-metafunction tglc
-  extend : σ (a v) -> σ
-  [(extend ((a_1 h_1) ... ·) (a v)) ((a v) (a_1 h_1) ... ·)])
+  extend : σ (a h) -> σ
+  [(extend ((a_1 h_1) ... ·) (a h)) ((a h) (a_1 h_1) ... ·)])
 
 (test-equal (term (extend (((addr 0) 1) ·) ((addr 1) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
 (test-equal (term (extend (((addr 0) 1) ·) ((fresh (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
 
 (define-metafunction tglc
   extract-argument : h -> x
-  [(extract-argument (λ (x) e)) x])
+  [(extract-argument (λ (x) e)) x]
+  [(extract-argument any_1) ,(error 'extract-argument "expected a λ, given: ~e" (term any_1))])
 
 (test-equal (term (extract-argument (λ (x) x))) (term x))
 (test-equal (term (extract-argument (λ (y) y))) (term y))
@@ -134,10 +135,14 @@
   #:mode (-→ I O)
   #:contract (-→ (e σ) (e σ)) ; one state -> different state
 
-  [(where h_answer (throw-on-v (lookup σ a)))
-   --------------------------------------------"app"
-   (-→ ((app a v) σ) ((substitute (extract-body h_answer) (extract-argument h_answer) v) σ))]
+  [(where a (fresh σ)) 
+   -------------------------------------------- "fun"
+   (-→ ((fun f (x) e) σ) (a (extend σ (a (λ (x) (substitute e f a))))))]
   
+  [(where func (throw-on-v (lookup σ a)))
+   --------------------------------------------"app"
+   (-→ ((app a v) σ) ((substitute (extract-body func) (extract-argument func) v) σ))]
+
   [(where a (fresh σ))
    ----------------------------- "new"
    (-→ ((ref v) σ) (a (extend σ (a v))))]
@@ -156,6 +161,9 @@
 
   )
 
+
+ 
+
 (test-judgment-holds
    (-→ ((! (addr 1)) (((addr 0) (λ (x) x)) ((addr 1) 27) ·))
       (27 (((addr 0) (λ (x) x)) ((addr 1) 27) ·))))
@@ -164,11 +172,15 @@
 (test-judgment-holds
    (-→ ((:= (addr 0) 3) (((addr 0) 0) ·)) (0 (((addr 0) 3) ·))))
 (test-judgment-holds
+ (-→ ((ref 3) (((addr 1) 42) ((addr 0) 37) ·)) ((addr 2) (((addr 2) 3) ((addr 1) 42) ((addr 0) 37) ·))))
+(test-judgment-holds
    (-→ ((ref 3) (((addr 0) 0) ·))
        ((addr 1) (((addr 1) 3) ((addr 0) 0) ·))))
 (test-judgment-holds
  (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·))
      (4 (((addr 0) (λ (x) x)) ·))))
+
+
 
 
 
