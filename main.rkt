@@ -118,7 +118,27 @@
    (-→ ((+ n_1 n_2) σ) (n_prime σ))]
 
   [(where #t (hastype σ v T_2)) ;; missing blame and (where v = a)
-   ----------------------------------""
+   ----------------------------------"v = a"
    (-→ ((:: v (⇒ T_1 T_2)) σ) (v σ))]
+
+  [(where #t (hastype σ v T_2)) ;; missing blame and (where v != a)
+   ----------------------------------"v != a"
+   (-→ ((:: v (⇒ T_1 T_2)) σ) (v σ))]
+  
+  ;[(where #f (hastype σ v T_2))
+  ; ---------------------------------------"BLAME"
+  ; (-→ ((:: v (⇒ T_1 T_2)) σ) (BLAME({l}))]
+
+  [(where #t (hastype σ v S)) ;; missing blame and (where v = a)
+   -----------------------------"idk v = a"
+   (-→ ((⇓ v (S a r)) σ) (v σ))]
+
+  [(where #t (hastype σ v S)) ;; missing blame and (where v = a)
+   -----------------------------"idk v != a"
+   (-→ ((⇓ v (S a r)) σ) (v σ))]
+  
+  ;[(where #f (hastype σ v S)) 
+  ; -----------------------------"blame"
+  ; (-→ ((⇓ v (S a r)) σ) (blame(σ v a r β)))]
 
   )

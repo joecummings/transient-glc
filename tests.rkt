@@ -67,6 +67,10 @@
   (test-judgment-holds ; without blame
     (-→ ((:: 4 (⇒ int int)) ·)
         (4 ·)))
+  (test-judgment-holds ; without blame
+    (-→ ((:: 4 (⇒ int int)) ·)
+        (4 ·)))
+  
 
 
 (module+ test
