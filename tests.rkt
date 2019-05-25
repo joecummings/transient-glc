@@ -47,29 +47,29 @@
 
 (module+ test
   (test-judgment-holds
-   (-→ ((! (addr 1)) (((addr 0) (λ (x) x)) ((addr 1) 27) ·))
-       (27 (((addr 0) (λ (x) x)) ((addr 1) 27) ·))))
+   (-→ ((! (addr 1)) (((addr 0) (λ (x) x)) ((addr 1) 27) ·) ·)
+       (27 (((addr 0) (λ (x) x)) ((addr 1) 27) ·) ·)))
   (test-judgment-holds
-   (-→ ((+ 1 2) ·) (3 ·)))
+   (-→ ((+ 1 2) · ·) (3 · ·)))
   (test-judgment-holds
-   (-→ ((:= (addr 0) 3) (((addr 0) 0) ·)) (0 (((addr 0) 3) ·))))
+   (-→ ((:= (addr 0) 3) (((addr 0) 0) ·) ·) (0 (((addr 0) 3) ·) ·)))
   (test-judgment-holds
-   (-→ ((ref 3) (((addr 1) 42) ((addr 0) 37) ·)) ((addr 2) (((addr 2) 3) ((addr 1) 42) ((addr 0) 37) ·))))
+   (-→ ((ref 3) (((addr 1) 42) ((addr 0) 37) ·) ·) ((addr 2) (((addr 2) 3) ((addr 1) 42) ((addr 0) 37) ·) ·)))
   (test-judgment-holds
-   (-→ ((ref 3) (((addr 0) 0) ·))
-       ((addr 1) (((addr 1) 3) ((addr 0) 0) ·))))
+   (-→ ((ref 3) (((addr 0) 0) ·) ·)
+       ((addr 1) (((addr 1) 3) ((addr 0) 0) ·) ·)))
   (test-judgment-holds
-   (-→ ((fun f (x) 6) (((addr 0) 42) · )) ((addr 1) (((addr 1) (λ (x) 6)) ((addr 0) 42) · ))))
+   (-→ ((fun f (x) 6) (((addr 0) 42) · ) ·) ((addr 1) (((addr 1) (λ (x) 6)) ((addr 0) 42) · ) ·)))
   (test-judgment-holds
-   (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·))
-       (4 (((addr 0) (λ (x) x)) ·)))))
+   (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·) ·)
+       (4 (((addr 0) (λ (x) x)) ·) ·))))
   
   (test-judgment-holds ; without blame
-    (-→ ((:: 4 (⇒ int int)) ·)
-        (4 ·)))
+    (-→ ((:: 4 (⇒ int int)) · ·)
+        (4 · ·)))
   (test-judgment-holds ; without blame
-    (-→ ((:: 4 (⇒ int int)) ·)
-        (4 ·)))
+    (-→ ((:: 4 (⇒ int int)) · ·)
+        (4 · ·)))
   
 
 
