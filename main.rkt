@@ -2,7 +2,7 @@
 (require rackunit)
 (require redex)
 
-(provide tglc lookup hastype throw-on-lambda plus throw-on-v -→
+(provide tglc lookup hastype plus -→
          replace extend fresh-a)
 
 (define-language tglc
@@ -68,11 +68,6 @@
   [(hastype σ n ref) #f])
 
 (define-metafunction tglc
-  throw-on-lambda : h -> v
-  [(throw-on-lambda v) v]
-  [(throw-on-lambda any_1) ,(error 'throw-on-lambda "found a lambda: ~e" (term any_1))])
-
-(define-metafunction tglc
   plus : n_1 n_2 -> n
   [(plus n_1 n_2) ,(+ (term n_1) (term n_2))])
 
@@ -94,11 +89,6 @@
   extend : σ (a h) -> σ
   [(extend ((a_1 h_1) ... ·) (a h)) ((a h) (a_1 h_1) ... ·)])
 
-(define-metafunction tglc
-  throw-on-v : h -> h
-  [(throw-on-v v) ,(error 'throw-on-v "expected a λ, given a ~e" (term v))]
-  [(throw-on-v h) h])
-
 (define-judgment-form tglc
   #:mode (-→ I O)
   #:contract (-→ (e σ) (e σ)) ; one state -> different state
@@ -107,24 +97,48 @@
    -------------------------------------------- "fun"
    (-→ ((fun f (x) e) σ) (a (extend σ (a (λ (x) (substitute e f a))))))]
   
-  [(where (λ (x) e) (throw-on-v (lookup σ a)))
-   --------------------------------------------"app"
+  [(where/error (λ (x) e) (lookup σ a))
+   ------------------------------------"app"
    (-→ ((app a v) σ) ((substitute e x v) σ))]
 
   [(where a (fresh-a σ))
    ----------------------------- "new"
    (-→ ((ref v) σ) (a (extend σ (a v))))]
   
-  [(where v_answer (throw-on-lambda (lookup σ a))) 
-   ------------------------------------------------"deref"
-   (-→ ((! a) σ) (v_answer σ))]
+  [(where/error v (lookup σ a)) 
+   -----------------------------"deref"
+   (-→ ((! a) σ) (v σ))]
 
-  [(where v_prime (throw-on-lambda (lookup σ a)))
-   -----------------------------------------------"assign"
+  [(where/error v_1 (lookup σ a))
+   ----------------------------------------"assign"
    (-→ ((:= a v) σ) (0 (replace σ (a v))))]
 
   [(where n_prime (plus n_1 n_2))
    --------------------------------"add"
    (-→ ((+ n_1 n_2) σ) (n_prime σ))]
+
+  [(where #t (hastype σ v T_2)) ;; missing blame and (where v = a)
+   ----------------------------------"v = a"
+   (-→ ((:: v (⇒ T_1 T_2)) σ) (v σ))]
+
+  [(where #t (hastype σ v T_2)) ;; missing blame and (where v != a)
+   ----------------------------------"v != a"
+   (-→ ((:: v (⇒ T_1 T_2)) σ) (v σ))]
+  
+  ;[(where #f (hastype σ v T_2))
+  ; ---------------------------------------"BLAME"
+  ; (-→ ((:: v (⇒ T_1 T_2)) σ) (BLAME({l}))]
+
+  [(where #t (hastype σ v S)) ;; missing blame and (where v = a)
+   -----------------------------"idk v = a"
+   (-→ ((⇓ v (S a r)) σ) (v σ))]
+
+  [(where #t (hastype σ v S)) ;; missing blame and (where v = a)
+   -----------------------------"idk v != a"
+   (-→ ((⇓ v (S a r)) σ) (v σ))]
+  
+  ;[(where #f (hastype σ v S)) 
+  ; -----------------------------"blame"
+  ; (-→ ((⇓ v (S a r)) σ) (blame(σ v a r β)))]
 
   )

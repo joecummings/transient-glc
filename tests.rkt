@@ -30,10 +30,6 @@
   (test-equal (term (hastype (((addr 0) (λ (x) x)) ·) (addr 0) →)) #t))
 
 (module+ test
-  (test-equal (term (throw-on-lambda 1)) 1)
-  (check-exn exn:fail? (λ () (term (throw-on-lambda (λ (x) x)))) "found a lambda"))
-
-(module+ test
   (test-equal (term (plus 1 2)) 3)
   (test-equal (term (plus 0 0)) 0))
 
@@ -48,12 +44,6 @@
 (module+ test
   (test-equal (term (extend (((addr 0) 1) ·) ((addr 1) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
   (test-equal (term (extend (((addr 0) 1) ·) ((fresh-a (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·))))
-
-(module+ test
-  (test-equal (term (throw-on-v (λ (x) x))) (term (λ (x) x)))
-  (test-equal (term (throw-on-v (lookup (((addr 0) (λ (x) x)) ·) (addr 0)))) (term (λ (x) x)))
-  (check-exn exn:fail? (λ () (term (throw-on-v 4))) "expected a λ, given")
-  )
 
 (module+ test
   (test-judgment-holds
@@ -73,6 +63,15 @@
   (test-judgment-holds
    (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·))
        (4 (((addr 0) (λ (x) x)) ·)))))
+  
+  (test-judgment-holds ; without blame
+    (-→ ((:: 4 (⇒ int int)) ·)
+        (4 ·)))
+  (test-judgment-holds ; without blame
+    (-→ ((:: 4 (⇒ int int)) ·)
+        (4 ·)))
+  
+
 
 (module+ test
   (test-results))
