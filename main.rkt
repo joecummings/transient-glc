@@ -161,9 +161,6 @@
 
   )
 
-
- 
-
 (test-judgment-holds
    (-→ ((! (addr 1)) (((addr 0) (λ (x) x)) ((addr 1) 27) ·))
       (27 (((addr 0) (λ (x) x)) ((addr 1) 27) ·))))
