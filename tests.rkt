@@ -71,9 +71,12 @@
   (test-judgment-holds 
    (-→ ((⇓ 42 (int (addr 0) RES)) (((addr 0) 37)·) ·)
        (42 (((addr 0) 37)·) ·)))
-
+  ;"cast succeed v = a"
+  (test-judgment-holds
+   (-→ ((:: (addr 0) (⇒ 123 int *)) (((addr 0) 11) ·) (((addr 0) ((int 144))) ·))
+       ((addr 0) (((addr 0) 11) ·) (((addr 0) ((int 144) (int ∈))) ·))))
+   
   )
-
 
 
 (module+ test

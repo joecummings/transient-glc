@@ -16,7 +16,7 @@
   (σ ::= · ((a h) ... σ)) ; heaps
   (h ::= (λ (x) e) v) ; heap values
   
-  (β ::= · ((a b) ... β)) ; blame sets
+  (β ::= · ((a (b ...)) ... β)) ; blame sets
   (b ::= (a r) L) ; blame elems
   (l ::= natural) ; blame labels
 
@@ -102,13 +102,21 @@
   extend : σ (a h) -> σ
   [(extend ((a_1 h_1) ... ·) (a h)) ((a h) (a_1 h_1) ... ·)])
 
+;; updates address a in the blame map if present (have have multiple 'a' point to list of b's
+;; QUESTION: this will just put all element in the list, instead of the union-set of the elements
 (define-metafunction tglc
-  ρ : β a b -> β
-  [(ρ any_1 any_2 any_3) any_1])
+  extend-β : β (a b_4) -> β
+  [(extend-β ((a_1 (b_1 ...)) ... (a (b_2 ...)) (a_3 (b_3 ...)) ... β) (a b_4))
+   ((a_1 (b_1 ...)) ... (a ( b_2 ... b_4)) (a_3 (b_3 ...)) ... β)]
+  )
 
 (define-metafunction tglc
-  BLAME : {l} -> (e σ β)
-  [(BLAME any_1) (e σ β)])
+  ρ : β a b -> β
+  [(ρ β a_1 b) (extend-β β (a_1 b))])
+
+;(define-metafunction tglc
+;  BLAME : {l} -> (e σ β)
+;  [(BLAME any_1) (e σ β)])
 
 (define-metafunction tglc
   blame : σ v a r β -> (e σ β)
@@ -165,5 +173,5 @@
   ;[(where #f (hastype σ v S)) 
   ; -------------------------------------------"check fail blame"
   ; (-→ ((⇓ v (S a r)) σ β) ((blame σ v a r β)))]
-
   )
+
