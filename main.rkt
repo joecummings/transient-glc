@@ -10,6 +10,7 @@
   (cast-e := (⇒ l T T) (⇔ l T T))
   (v ::= a n) ; values
   (x y f ::= variable-not-otherwise-mentioned)
+  (n ::= natural) ; naturals
 
   (a ::= (addr natural)) ; address
   (σ ::= · ((a h) ... σ)) ; heaps
@@ -25,8 +26,8 @@
   (q ::= l ∈) ; optional labels
   (r ::= RES ARG DEREF) ; tags
  
-  (n ::= natural) ; naturals
   (E ::= hole (app E e) (app v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (:: E cast-e) (⇓ E (S e r)) (⇓ v (S E r)))  ; E 
+  (ς ::= (e σ β) (BLAME l))
   #:binding-forms
   (λ (x) e #:refers-to x))
 
@@ -115,7 +116,7 @@
 
 (define-judgment-form tglc
   #:mode (-→ I O)
-  #:contract (-→ (e σ β) (e σ β)) ; one state -> different state
+  #:contract (-→ (e σ β) ς) ; one state -> different state
 
   [(where a (fresh-a σ)) 
    -------------------------------------------------------------------------"fun"
@@ -151,8 +152,7 @@
   
   [(where #f (hastype σ v T_2))
    ---------------------------------------"cast fail BLAME"
-   (-→ ((:: v (⇒ l T_1 T_2)) σ β)
-       ,(error ('cast-fail "cast from ~e to ~e failed, blaming ~e" (term T_1) (term T_2) (term l))))]
+   (-→ ((:: v (⇒ l T_1 T_2)) σ β) (BLAME l))]
 
   [(where #t (hastype σ v S)) (where a_1 v)
    ---------------------------------------------"check succeed v = a"

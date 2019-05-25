@@ -62,15 +62,18 @@
    (-→ ((fun f (x) 6) (((addr 0) 42) · ) ·) ((addr 1) (((addr 1) (λ (x) 6)) ((addr 0) 42) · ) ·)))
   (test-judgment-holds
    (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·) ·)
-       (4 (((addr 0) (λ (x) x)) ·) ·))))
-  
-  (test-judgment-holds ; without blame
-    (-→ ((:: 4 (⇒ int int)) · ·)
-        (4 · ·)))
-  (test-judgment-holds ; without blame
-    (-→ ((:: 4 (⇒ int int)) · ·)
-        (4 · ·)))
-  
+       (4 (((addr 0) (λ (x) x)) ·) ·)))
+  ;"cast succeed v != a"
+  (test-judgment-holds 
+   (-→ ((:: 4 (⇒ 3 int int)) · ·)
+       (4 · ·)))
+  ;"check succeed v != a"
+  (test-judgment-holds 
+   (-→ ((⇓ 42 (int (addr 0) RES)) (((addr 0) 37)·) ·)
+       (42 (((addr 0) 37)·) ·)))
+
+  )
+
 
 
 (module+ test
