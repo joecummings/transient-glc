@@ -2,24 +2,33 @@
 (require rackunit)
 (require redex)
 
+(provide tglc lookup hastype throw-on-lambda plus throw-on-v -→
+         replace extend fresh-a)
+
 (define-language tglc
-  (e ::= x v (fun f (x) e) (app e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e)) ; expr
+  (e ::= x v (fun f (x) e) (app e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e) (⇓ e (S e r))) ; expr
   (cast-e := (⇒ T T) (⇔ T T))
-  (x f ::= variable-not-otherwise-mentioned)
+  (v ::= a n) ; values
+  (x y f ::= variable-not-otherwise-mentioned)
+
   (a ::= (addr natural)) ; address
   (σ ::= · ((a h) ... σ)) ; heaps
   (h ::= (λ (x) e) v) ; heap values
+  
   (β ::= · ((a b) ... β)) ; blame sets
   (b ::= (a r) L) ; blame elems
+  (l ::= natural) ; blame labels
+
   (T ::= int (→ T T) * (ref T)) ; types
   (L ::= (int q) (→ q L L) (ref q L) * (⊥ l)) ; labelled types
   (S ::= int → ref *) ; type tags
-  (q ::= l ∈) ; labelled types 
-  (v ::= a n) ; values
+  (q ::= l ∈) ; optional labels
+  (r ::= RES ARG DEREF) ; tags
+ 
   (n ::= natural) ; naturals
-  (E ::= hole (app E e) (app v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (⇒ ) ; E (incomplete)
-     #:binding-forms
-     (λ (x) e #:refers-to x))) ;; not sure if this is correct
+  (E ::= hole (app E e) (app v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (:: E cast-e) (⇓ E (S e r)) (⇓ v (S E r)))  ; E 
+  #:binding-forms
+  (λ (x) e #:refers-to x))
 
 (default-language tglc)
 
@@ -29,9 +38,9 @@
   [(cast (⇒ int int)) (int ∈)]
   [(cast (⇒ int *)) (int ∈)]
   [(cast (⇒ * int)) (int l)]
-  [(cast (⇒ (→ T_1 T_2) (→ T_3 T_4))) (→ ∈ (⇒ T_3 T_1) (⇒ T_2 T_4))]
-  [(cast (⇒ (→ T_1 T_2) *)) (→ ∈ (⇒ * T_1) (⇒ T_2 *))]
-  [(cast (⇒ * (→ T_1 T_2))) (→ l (⇒ T_1 *)  (⇒ * T_2))]
+  [(cast (⇒ (→ T_1 T_2) (→ T_3 T_4))) (→ ∈ (cast (⇒ T_3 T_1)) (cast (⇒ T_2 T_4)))]
+  [(cast (⇒ (→ T_1 T_2) *)) (→ ∈ (cast (⇒ * T_1)) (cast (⇒ T_2 *)))]
+  [(cast (⇒ * (→ T_1 T_2))) (→ (⇒ T_1 *)  (⇒ * T_2))]
   [(cast (⇒ (ref T_1) (ref T_2))) (ref ∈ (⇔ T_1 T_1))]
   [(cast (⇒ (ref T_1 *))) (ref ∈ (⇔ * T_1))]
   [(cast (⇒ (* (ref T_1)))) (ref l (⇔ T_1 *))]
@@ -58,30 +67,14 @@
   [(hastype σ a ref) ,(if (term (value? (lookup σ a))) #t #f)]
   [(hastype σ n ref) #f])
 
-(test-equal (term (lookup (((addr 0) (λ (x) 1)) ·) (addr 0))) (term (λ (x) 1)))
-  
-(test-equal (term (hastype (((addr 0) 42) ·) 38 *)) #t)
-(test-equal (term (hastype (((addr 0) 42) ·) (addr 0) ref)) #t)
-(test-equal (term (hastype (((addr 0) 42) ·) 42 ref)) #f)
-(test-equal (term (hastype (((addr 0) (λ (x) x)) ·) (addr 0) →)) #t)
-
-(test-equal (term (lookup (((addr 0) 1) ·) (addr 0))) 1)
-(check-exn exn:fail? (λ () (term (lookup (((addr 0) (λ (x) x)) ((addr 1) 27) ·) (addr 3)))) "not found")
-
 (define-metafunction tglc
   throw-on-lambda : h -> v
   [(throw-on-lambda v) v]
   [(throw-on-lambda any_1) ,(error 'throw-on-lambda "found a lambda: ~e" (term any_1))])
 
-(test-equal (term (throw-on-lambda 1)) 1)
-(check-exn exn:fail? (λ () (term (throw-on-lambda (λ (x) x)))) "found a lambda")
-
 (define-metafunction tglc
   plus : n_1 n_2 -> n
   [(plus n_1 n_2) ,(+ (term n_1) (term n_2))])
-
-(test-equal (term (plus 1 2)) 3)
-(test-equal (term (plus 0 0)) 0)
 
 (define-metafunction tglc
   replace : σ (a v_1) -> σ
@@ -89,61 +82,36 @@
   [(replace (any_1 (any_2 v))) ,(error 'replace "address not found: ~e" (term any_2))]
   [(replace (any_1 (any_2 h))) ,(error ('replace "expected a value, given: ~e" (term h)))])
 
-(test-equal (term (replace (((addr 0) 0) ·) ((addr 0) 3))) (term (((addr 0) 3) ·)))
-(check-exn exn:fail? (λ () (term (replace (((addr 0) 1) ·) ((addr 1) 1)))) "address not found")
-(check-exn exn:fail? (λ () (term (replace (((addr 0) 1) ·) ((addr 1) (λ (x) x))))) "expected a value")
-
 (define-metafunction tglc
   add-to-address : a -> a
   [(add-to-address (addr n)) (addr (plus n 1))])
 
 (define-metafunction tglc
-  fresh : σ -> a
-  [(fresh ((a h) (a_1 h_1) ... ·)) (add-to-address a)])
-
-(test-equal (term (fresh (((addr 5) 1) ·))) (term (addr 6)))
+  fresh-a : σ -> a
+  [(fresh-a ((a h) (a_1 h_1) ... ·)) (add-to-address a)])
 
 (define-metafunction tglc
   extend : σ (a h) -> σ
   [(extend ((a_1 h_1) ... ·) (a h)) ((a h) (a_1 h_1) ... ·)])
-
-(test-equal (term (extend (((addr 0) 1) ·) ((addr 1) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
-(test-equal (term (extend (((addr 0) 1) ·) ((fresh (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
-
-(define-metafunction tglc
-  extract-argument : h -> x
-  [(extract-argument (λ (x) e)) x]
-  [(extract-argument any_1) ,(error 'extract-argument "expected a λ, given: ~e" (term any_1))])
-
-(test-equal (term (extract-argument (λ (x) x))) (term x))
-(test-equal (term (extract-argument (λ (y) y))) (term y))
 
 (define-metafunction tglc
   throw-on-v : h -> h
   [(throw-on-v v) ,(error 'throw-on-v "expected a λ, given a ~e" (term v))]
   [(throw-on-v h) h])
 
-(test-equal (term (throw-on-v (λ (x) x))) (term (λ (x) x)))
-(check-exn exn:fail? (λ () (term (throw-on-v 4))) "expected a λ, given")
-
-(define-metafunction tglc
-  extract-body : h -> e
-  [(extract-body (λ (x) e)) e]
-  [(extract-body any_1) ,(error 'extract-body "expected a λ, given: ~e" (term any_1))])
-
 (define-judgment-form tglc
   #:mode (-→ I O)
   #:contract (-→ (e σ) (e σ)) ; one state -> different state
 
-  [(where a (fresh σ)) 
+  [(where a (fresh-a σ)) 
    -------------------------------------------- "fun"
    (-→ ((fun f (x) e) σ) (a (extend σ (a (λ (x) (substitute e f a))))))]
   
-  [(where func (throw-on-v (lookup σ a)))
+  [(where (λ (x) e) (throw-on-v (lookup σ a)))
    --------------------------------------------"app"
-   (-→ ((app a v) σ) ((substitute (extract-body func) (extract-argument func) v) σ))]
+   (-→ ((app a v) σ) ((substitute e x v) σ))]
 
-  [(where a (fresh σ))
+  [(where a (fresh-a σ))
    ----------------------------- "new"
    (-→ ((ref v) σ) (a (extend σ (a v))))]
   
@@ -160,28 +128,3 @@
    (-→ ((+ n_1 n_2) σ) (n_prime σ))]
 
   )
-
-(test-judgment-holds
-   (-→ ((! (addr 1)) (((addr 0) (λ (x) x)) ((addr 1) 27) ·))
-      (27 (((addr 0) (λ (x) x)) ((addr 1) 27) ·))))
-(test-judgment-holds
-   (-→ ((+ 1 2) ·) (3 ·)))
-(test-judgment-holds
-   (-→ ((:= (addr 0) 3) (((addr 0) 0) ·)) (0 (((addr 0) 3) ·))))
-(test-judgment-holds
- (-→ ((ref 3) (((addr 1) 42) ((addr 0) 37) ·)) ((addr 2) (((addr 2) 3) ((addr 1) 42) ((addr 0) 37) ·))))
-(test-judgment-holds
-   (-→ ((ref 3) (((addr 0) 0) ·))
-       ((addr 1) (((addr 1) 3) ((addr 0) 0) ·))))
-(test-judgment-holds
- (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·))
-     (4 (((addr 0) (λ (x) x)) ·))))
-
-
-
-
-
-
-
-
-
