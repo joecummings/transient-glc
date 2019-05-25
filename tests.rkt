@@ -50,17 +50,10 @@
   (test-equal (term (extend (((addr 0) 1) ·) ((fresh-a (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·))))
 
 (module+ test
-  ;(test-equal (term (extract-argument (λ (x) y))) (term x))
-  ;(test-equal (term (extract-argument (λ (y) x))) (term y))
-  )
-
-(module+ test
   (test-equal (term (throw-on-v (λ (x) x))) (term (λ (x) x)))
-  (check-exn exn:fail? (λ () (term (throw-on-v 4))) "expected a λ, given"))
-
-(module+ test
-  (test-equal (term (extract-body (λ (x) y))) (term y))
-  (test-equal (term (extract-body (λ (x) 4))) (term 4)))
+  (test-equal (term (throw-on-v (lookup (((addr 0) (λ (x) x)) ·) (addr 0)))) (term (λ (x) x)))
+  (check-exn exn:fail? (λ () (term (throw-on-v 4))) "expected a λ, given")
+  )
 
 (module+ test
   (test-judgment-holds

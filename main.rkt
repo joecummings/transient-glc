@@ -2,8 +2,8 @@
 (require rackunit)
 (require redex)
 
-(provide tglc lookup hastype throw-on-lambda plus throw-on-v extract-argument -→
-         replace extend extract-argument fresh-a extract-body)
+(provide tglc lookup hastype throw-on-lambda plus throw-on-v -→
+         replace extend fresh-a)
 
 (define-language tglc
   (e ::= x v (fun f (x) e) (app e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e) (⇓ e (S e r))) ; expr
@@ -28,7 +28,7 @@
   (n ::= natural) ; naturals
   (E ::= hole (app E e) (app v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (:: E cast-e) (⇓ E (S e r)) (⇓ v (S E r)))  ; E 
   #:binding-forms
-  (λ (x) e #:refers-to x)) ;; not sure if this is correct
+  (λ (x) e #:refers-to x))
 
 (default-language tglc)
 
@@ -95,19 +95,9 @@
   [(extend ((a_1 h_1) ... ·) (a h)) ((a h) (a_1 h_1) ... ·)])
 
 (define-metafunction tglc
-  extract-argument : h -> x
-  [(extract-argument (λ (x) e)) x]
-  [(extract-argument any_1) ,(error 'extract-argument "expected a λ, given: ~e" (term any_1))])
-
-(define-metafunction tglc
   throw-on-v : h -> h
   [(throw-on-v v) ,(error 'throw-on-v "expected a λ, given a ~e" (term v))]
   [(throw-on-v h) h])
-
-(define-metafunction tglc
-  extract-body : h -> e
-  [(extract-body (λ (x) e)) e]
-  [(extract-body any_1) ,(error 'extract-body "expected a λ, given: ~e" (term any_1))])
 
 (define-judgment-form tglc
   #:mode (-→ I O)
@@ -117,9 +107,9 @@
    -------------------------------------------- "fun"
    (-→ ((fun f (x) e) σ) (a (extend σ (a (λ (x) (substitute e f a))))))]
   
-  [(where func (throw-on-v (lookup σ a)))
+  [(where (λ (x) e) (throw-on-v (lookup σ a)))
    --------------------------------------------"app"
-   (-→ ((app a v) σ) ((substitute (extract-body func) (extract-argument func) v) σ))]
+   (-→ ((app a v) σ) ((substitute e x v) σ))]
 
   [(where a (fresh-a σ))
    ----------------------------- "new"
