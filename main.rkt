@@ -7,7 +7,7 @@
 
 (define-language tglc
   (e ::= x v (fun f (x) e) (app e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e) (⇓ e (S e r))) ; expr
-  (cast-e := (⇒ T T) (⇔ T T))
+  (cast-e := (⇒ l T T) (⇔ l T T))
   (v ::= a n) ; values
   (x y f ::= variable-not-otherwise-mentioned)
 
@@ -34,17 +34,29 @@
 
 (define-metafunction tglc
   cast : cast-e -> L
-  [(cast (⇒ * *)) *]
-  [(cast (⇒ int int)) (int ∈)]
-  [(cast (⇒ int *)) (int ∈)]
-  [(cast (⇒ * int)) (int l)]
-  [(cast (⇒ (→ T_1 T_2) (→ T_3 T_4))) (→ ∈ (cast (⇒ T_3 T_1)) (cast (⇒ T_2 T_4)))]
-  [(cast (⇒ (→ T_1 T_2) *)) (→ ∈ (cast (⇒ * T_1)) (cast (⇒ T_2 *)))]
-  [(cast (⇒ * (→ T_1 T_2))) (→ (⇒ T_1 *)  (⇒ * T_2))]
-  [(cast (⇒ (ref T_1) (ref T_2))) (ref ∈ (⇔ T_1 T_1))]
-  [(cast (⇒ (ref T_1 *))) (ref ∈ (⇔ * T_1))]
-  [(cast (⇒ (* (ref T_1)))) (ref l (⇔ T_1 *))]
-  [(cast (⇒ (any_1 any_2))) (⊥ l)])
+  [(cast (⇒ l * *)) *]
+  [(cast (⇒ l int int)) (int ∈)]
+  [(cast (⇒ l int *)) (int ∈)]
+  [(cast (⇒ l * int)) (int l)]
+  [(cast (⇒ l (→ T_1 T_2) (→ T_3 T_4))) (→ ∈ (cast (⇒ l T_3 T_1)) (cast (⇒ l T_2 T_4)))]
+  [(cast (⇒ l (→ T_1 T_2) *)) (→ ∈ (cast (⇒ l * T_1)) (cast (⇒ l T_2 *)))]
+  [(cast (⇒ l * (→ T_1 T_2))) (→ l (cast (⇒ l T_1 *)) (cast (⇒ l * T_2)))]
+  [(cast (⇒ l (ref T_1) (ref T_2))) (ref ∈ (cast (⇔ l l T_2 T_1)))]
+  [(cast (⇒ l (ref T_1) *)) (ref ∈ (cast (⇔ l l * T_1)))]
+  [(cast (⇒ l (* (ref T_1)))) (ref l (cast (⇔ l T_1 *)))]
+  [(cast (⇒ l (T_1 T_2))) (⊥ l)]
+
+  [(cast (⇔ l * *)) *]
+  [(cast (⇔ l int int)) (int ∈)]
+  [(cast (⇔ l int *)) (int l)]
+  [(cast (⇔ l * int)) (int l)]
+  [(cast (⇔ l (→ T_1 T_2) (→ T_3 T_4))) (→ ∈ (cast (⇔ l T_3 T_1)) (cast (⇔ l T_2 T_4)))]
+  [(cast (⇔ l (→ T_1 T_2) *)) (→ l (cast (⇔ l * T_1)) (cast (⇔ l T_2 *)))]
+  [(cast (⇔ l * (→ T_1 T_2))) (→ l (cast (⇔ l T_1 *)) (cast (⇔ l * T_2)))]
+  [(cast (⇔ l (ref T_1) (ref T_2))) (ref ∈ (cast (⇔ l l T_2 T_1)))]
+  [(cast (⇔ l (ref T_1) *)) (ref l (cast (⇔ l l * T_1)))]
+  [(cast (⇔ l (* (ref T_1)))) (ref l (cast (⇔ l T_1 *)))]
+  [(cast (⇔ l (T_1 T_2))) (⊥ l)])
 
 (define-metafunction tglc
   value? : h -> #t or #f
@@ -129,28 +141,29 @@
    --------------------------------"add"
    (-→ ((+ n_1 n_2) σ β) (n_3 σ β))]
 
-  ;[(where #t (hastype σ v T_2)) (where a v)
-  ; -------------------------------------------------"v = a" ; not sure what goes HERE
-  ; (-→ ((:: v (⇒ T_1 T_2)) σ β) (v σ ρ(β a HERE)))]
+  [(where #t (hastype σ v T_2)) (where a v)
+   -------------------------------------------------"cast succeed v = a"
+   (-→ ((:: v (⇒ l T_1 T_2)) σ β) (v σ (ρ β a (cast (⇒ l T_1 T_2)))))]
 
   [(where #t (hastype σ v T_2))
-   ----------------------------------"v != a"
-   (-→ ((:: v (⇒ T_1 T_2)) σ β) (v σ β))]
+   ----------------------------------"cast succeed v != a"
+   (-→ ((:: v (⇒ l T_1 T_2)) σ β) (v σ β))]
   
-  ;[(where #f (hastype σ v T_2))
-  ; ---------------------------------------"BLAME" ; not sure what goes HERE
-  ; (-→ ((:: v (⇒ T_1 T_2)) σ β) (BLAME(HERE)))]
+  [(where #f (hastype σ v T_2))
+   ---------------------------------------"cast fail BLAME"
+   (-→ ((:: v (⇒ l T_1 T_2)) σ β)
+       ,(error ('cast-fail "cast from ~e to ~e failed, blaming ~e" (term T_1) (term T_2) (term l))))]
 
   [(where #t (hastype σ v S)) (where a_1 v)
-   ---------------------------------------------"idk v = a"
+   ---------------------------------------------"check succeed v = a"
    (-→ ((⇓ v (S a r)) σ β) (v σ (ρ β a_1 (a r))))]
 
   [(where #t (hastype σ v S))
-   ----------------------------------"idk v != a"
+   ----------------------------------"check succeed v != a"
    (-→ ((⇓ v (S a r)) σ β) (v σ β))]
   
-  [(where #f (hastype σ v S)) 
-   -------------------------------------------"blame"
-   (-→ ((⇓ v (S a r)) σ β) ((blame σ v a r β)))]
+  ;[(where #f (hastype σ v S)) 
+  ; -------------------------------------------"check fail blame"
+  ; (-→ ((⇓ v (S a r)) σ β) ((blame σ v a r β)))]
 
   )
