@@ -64,9 +64,9 @@
    (-→ ((app (addr 0) 4) (((addr 0) (λ (x) x)) ·))
        (4 (((addr 0) (λ (x) x)) ·)))))
   
-  ;(test-judgment-holds ; without blame
-  ;  (-→ ((:: 4 (⇒ T T)) ·)
-  ;      (v ·)))
+  (test-judgment-holds ; without blame
+    (-→ ((:: 4 (⇒ int int)) ·)
+        (4 ·)))
 
 
 (module+ test
