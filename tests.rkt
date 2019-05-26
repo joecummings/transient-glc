@@ -1,8 +1,7 @@
 #lang racket
 (require rackunit)
 (require redex)
-
-(require "main.rkt")
+(require "tglc-def.rkt" "main.rkt" "blame.rkt")
 
 (module+ test
   (test-equal (redex-match? tglc e (term y)) #t)
@@ -44,6 +43,9 @@
 (module+ test
   (test-equal (term (extend (((addr 0) 1) ·) ((addr 1) 2))) (term (((addr 1) 2) ((addr 0) 1) ·)))
   (test-equal (term (extend (((addr 0) 1) ·) ((fresh-a (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·))))
+
+(module+ test
+  (test-equal (term (extract · (int ∈))) (term (int ∈))))
 
 (module+ test
   (test-judgment-holds
