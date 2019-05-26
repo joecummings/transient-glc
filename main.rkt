@@ -1,35 +1,8 @@
 #lang racket
-(require rackunit)
 (require redex)
+(require "tglc-def.rkt" "blame.rkt")
 
-(provide tglc lookup hastype plus -→
-         replace extend fresh-a)
-
-(define-language tglc
-  (e ::= x v (fun f (x) e) (app e e) (+ e e) (ref e) (! e) (:= e e) (:: e cast-e) (⇓ e (S e r))) ; expr
-  (cast-e := (⇒ l T T) (⇔ l T T))
-  (v ::= a n) ; values
-  (x y f ::= variable-not-otherwise-mentioned)
-  (n ::= natural) ; naturals
-
-  (a ::= (addr natural)) ; address
-  (σ ::= · ((a h) ... σ)) ; heaps
-  (h ::= (λ (x) e) v) ; heap values
-  
-  (β ::= · ((a (b ...)) ... β)) ; blame sets
-  (b ::= (a r) L) ; blame elems
-  (l ::= natural) ; blame labels
-
-  (T ::= int (→ T T) * (ref T)) ; types
-  (L ::= (int q) (→ q L L) (ref q L) * (⊥ l)) ; labelled types
-  (S ::= int → ref *) ; type tags
-  (q ::= l ∈) ; optional labels
-  (r ::= RES ARG DEREF) ; tags
- 
-  (E ::= hole (app E e) (app v E) (+ E e) (+ v E) (ref E) (! E) (:= E e) (:: E cast-e) (⇓ E (S e r)) (⇓ v (S E r)))  ; E 
-  (ς ::= (e σ β) (BLAME l))
-  #:binding-forms
-  (λ (x) e #:refers-to x))
+(provide lookup hastype plus -→ replace extend fresh-a)
 
 (default-language tglc)
 
@@ -101,26 +74,6 @@
 (define-metafunction tglc
   extend : σ (a h) -> σ
   [(extend ((a_1 h_1) ... ·) (a h)) ((a h) (a_1 h_1) ... ·)])
-
-;; updates address a in the blame map if present (have have multiple 'a' point to list of b's
-;; QUESTION: this will just put all element in the list, instead of the union-set of the elements
-(define-metafunction tglc
-  extend-β : β (a b_4) -> β
-  [(extend-β ((a_1 (b_1 ...)) ... (a (b_2 ...)) (a_3 (b_3 ...)) ... β) (a b_4))
-   ((a_1 (b_1 ...)) ... (a ( b_2 ... b_4)) (a_3 (b_3 ...)) ... β)]
-  )
-
-(define-metafunction tglc
-  ρ : β a b -> β
-  [(ρ β a_1 b) (extend-β β (a_1 b))])
-
-;(define-metafunction tglc
-;  BLAME : {l} -> (e σ β)
-;  [(BLAME any_1) (e σ β)])
-
-(define-metafunction tglc
-  blame : σ v a r β -> (e σ β)
-  [(blame any_1 any_2 any_3 any_4 any_5) (e σ β)])
 
 (define-judgment-form tglc
   #:mode (-→ I O)
