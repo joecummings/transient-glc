@@ -1,7 +1,7 @@
 #lang racket
 (require rackunit)
 (require redex)
-(require "tglc-def.rkt" "main.rkt" "blame.rkt")
+(require "tglc-def.rkt" "main.rkt" "blame.rkt" "translate.rkt")
 
 (module+ test
   (test-equal (redex-match? tglc e (term y)) #t)
@@ -46,6 +46,48 @@
 
 (module+ test
   (test-equal (term (extract · (int ∈))) (term (int ∈))))
+
+(module+ test
+  (test-equal (term (T-to-S *)) (term *))
+  (test-equal (term (T-to-S int)) (term int))
+  (test-equal (term (T-to-S (→ int *))) (term →))
+  (test-equal (term (T-to-S (ref int))) (term ref)))
+
+(module+ test
+  (test-judgment-holds
+   (▹ (ref int) (ref int)))
+  (test-judgment-holds
+   (▹ * (ref *)))
+  (test-judgment-holds
+   (▹ (→ (→ int int) int) (→ (→ int int) int)))
+  (test-judgment-holds
+   (▹ * (→ * *))))
+
+(module+ test
+  (test-judgment-holds
+   (∼ int int))
+  (test-judgment-holds
+   (∼ * (→ int int)))
+  (test-judgment-holds
+    (∼ (ref int) *))
+  (test-judgment-holds
+    (∼ (ref *) (ref int)))
+  (test-judgment-holds
+    (∼ (→ int *) (→ int *))))
+
+(module+ test
+  (test-equal (term (lookup-Γ ((: x int) ·) x)) (term int)))
+
+(module+ test
+  (test-judgment-holds
+   (↝ · 42 0 42 int 0))
+  (test-judgment-holds
+   (↝ ((: x int) ·) x 0 x int 0))
+  (test-judgment-holds
+   (↝ · (ref 42) 0 (ref 42) (ref int) 0)))
+
+(module+ test
+  (test-equal (term (fresh-l 42)) (term 43)))
 
 (module+ test
   (test-judgment-holds
