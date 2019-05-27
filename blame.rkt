@@ -2,7 +2,7 @@
 (require redex)
 (require "tglc-def.rkt")
 
-(provide extract label extend-β ρ blame)
+(provide extract label extend-β ρ blame collect-blame)
 
 (default-language tglc)
 
@@ -21,6 +21,24 @@
   [(label (→ q L_1 L_2)) q]
   [(label (ref q L_1)) q]
   [(label (⊥ l)) l])
+
+(define-metafunction tglc
+  lookup-β : β a -> (b ...)
+  [(lookup-β ((a_1 (b_1 ...)) ... (a (b ...)) (a_2 (b_2 ...)) ... β) a) (b ...)]
+  [(lookup-β any_1 any_2) ,(error 'lookup-β "not found: ~e" (term any_1))])
+
+(define-metafunction tglc
+  collect-blame : r-bar β b -> L-bar
+  [(collect-blame any_1 any_2 L)
+    (L_1 ·)
+    (where L_1 (extract any_1 L)) (where l (label L_1))]
+  [(collect-blame any_1 any_2 L)
+    ·
+    (where L_1 (extract any_1 L)) (where ∈ (label L_1))]
+  [(collect-blame any_1 any_2 (a r))
+    ,(cons (map (λ (bs)
+            (term (collect-blame ,(cons (term r) (term any_1)) any_2 bs)))
+          (term (lookup-β any_2 a))) (term ·))])
 
 ;; updates address a in the blame map if present (have have multiple 'a' point to list of b's
 ;; QUESTION: this will just put all element in the list, instead of the union-set of the elements
