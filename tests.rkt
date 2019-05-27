@@ -1,7 +1,7 @@
 #lang racket
 (require rackunit)
 (require redex)
-(require "tglc-def.rkt" "main.rkt" "blame.rkt" "translate.rkt")
+(require "tglc-def.rkt" "main.rkt" "blame.rkt" "translate.rkt" "types.rkt")
 
 (module+ test
   (test-equal (redex-match? tglc e (term y)) #t)

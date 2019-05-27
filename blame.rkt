@@ -1,7 +1,6 @@
 #lang racket
 (require redex)
-(require compatibility/mlist)
-(require "tglc-def.rkt")
+(require "tglc-def.rkt" "types.rkt")
 
 (provide extract label extend-β ρ blame collect-blame lookup-β)
 
@@ -44,6 +43,23 @@
             (term (collect-blame ,(list (term r) (term any_1)) any_2 ,bs)))
           (term (lookup-β any_2 a)))))])
 
+(define-metafunction tglc
+  toT : L -> T
+  [(toT *) *]
+  [(toT (int q)) int]
+  [(toT (ref q L_1)) (ref T_1)
+    (where T_1 (toT L_1))]
+  [(toT (→ q L_1 L_2)) (→ T_1 T_2)
+    (where T_1 (toT L_1)) (where T_2 (toT L_2))])
+
+(define-metafunction tglc
+  resolve : σ v (L ...) -> (q ...)
+  [(resolve any_1 any_2 ((⊥ l) ... )) (l ... (resolve any_1 any_2 ,(rest (term ((⊥ l) ... )))))]
+  [(resolve any_1 any_2 (L_1 ... )) ((label L_1) ... (resolve any_1 any_2 ,(rest (term (L_1 ...)))))
+    (where #f (hastype any_1 any_2 (toT (toT L_1))))]
+  [(resolve any_1 any_2 (L_1 ... )) ((label L_1) ... (resolve any_1 any_2 ,(rest (term (L_1 ...)))))]
+  [(resolve any_1 any_2 ·) ()])
+
 ;; updates address a in the blame map if present (have have multiple 'a' point to list of b's
 ;; QUESTION: this will just put all element in the list, instead of the union-set of the elements
 (define-metafunction tglc
@@ -56,5 +72,7 @@
   [(ρ β a_1 b) (extend-β β (a_1 b))])
 
 (define-metafunction tglc
-  blame : σ v a r β -> (e σ β)
-  [(blame any_1 any_2 any_3 any_4 any_5) (e σ β)])
+  blame : σ v a r β -> ς
+  [(blame any_1 any_2 any_3 any_4 any_5) (BLAME q-bar)
+    (where L-bar (collect-blame any_4 any_5 (any_3 any_4)))
+    (where q-bar (resolve any_1 any_2 L-bar))])

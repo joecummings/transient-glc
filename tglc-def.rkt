@@ -31,7 +31,7 @@
  
   (E ::= hole (app E e) (app v E) (+ E e) (+ v E)
      (ref E) (! E) (:= E e) (:: E cast-e) (⇓ E (S e r)) (⇓ v (S E r)))  ; E 
-  (ς ::= (e σ β) (BLAME l))
+  (ς ::= (e σ β) (BLAME (q ...)))
   #:binding-forms
   (λ (x) e #:refers-to x))
 
