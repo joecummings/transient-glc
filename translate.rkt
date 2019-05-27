@@ -52,8 +52,10 @@
 (define-metafunction tglc
   lookup-Γ : Γ x -> T
   [(lookup-Γ ((: x T) (: x_1 T_1) ...  Γ) x) T]
+  ;[(lookup-Γ ((: x_1 T_1) ... (: x T)... Γ) x) T]
+  [(lookup-Γ ((: x_1 T_1) ... (: x T) Γ) x) T]
   [(lookup-Γ ((: x_1 T_1) ... (: x T) (: x_2 T_2) Γ) x) T]
-  [(lookup-Γ any_1 any_2) ,(error 'lookup "not found: ~e" (term any_1))])
+  [(lookup-Γ any_1 any_2) ,(error 'lookup "not found: ~e in Γ ~e" (term any_2) (term any_1))])
 
 (define-metafunction tglc
   fresh-l : l -> l
@@ -74,10 +76,15 @@
     -------------------- "refs"
     (↝ Γ (ref es) l (ref e) (ref T) l_1)]
   
-  [ (↝ Γ es_1 l e_1 T_1 l_1) (∼ T_1 int) (where l_2 (fresh-a l_1))
-                       (↝ Γ es_2 l_2 e_2 T_2 l_3) (∼ T_2 int) (where l_4 (fresh-a l_3))
+  [ (↝ Γ es_1 l e_1 T_1 l_1) (∼ T_1 int) (where l_2 (fresh-l l_1))
+                       (↝ Γ es_2 l_2 e_2 T_2 l_3) (∼ T_2 int) (where l_4 (fresh-l l_3))
     --------------------------------------------------------------------------------- "addition"
     (↝ Γ (+ es_1 es_2) l ( + (:: e_1 (⇒ l_2 T_1 int)) (:: e_2 (⇒ l_4 T_2 int))) int l_4)]
+  
+  [ (↝ ((: f (→ T_1 T_2)) (: x T_1) Γ) es l e_1 T_3 l_1) (∼ T_2 T_3)
+   ------------------------------------------------------------------------------------ "functions"
+   (↝ Γ (→ (fun f (: x T_1)) (T_2 es)) l
+      (fun f (x) ,(let ([x (term (⇓ x ((T-to-S T_1) f ARG)))])` e_1)) (→ T_1 T_2) l_1) ]
   )
 
 
