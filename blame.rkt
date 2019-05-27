@@ -19,7 +19,7 @@
   [(label *) ∈]
   [(label (int q)) q]
   [(label (→ q L_1 L_2)) q]
-  [(label (ref q)) q]
+  [(label (ref q L_1)) q]
   [(label (⊥ l)) l])
 
 ;; updates address a in the blame map if present (have have multiple 'a' point to list of b's
