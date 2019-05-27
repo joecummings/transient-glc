@@ -59,12 +59,11 @@
   (test-equal (term (label (⊥ 1))) (term 1)))
 
 (module+ test
-  (test-equal (term (collect-blame · · (int 1))) (term ((int 1) ·)))
-  (test-equal (term (collect-blame · · *)) (term ·))
-  ;(test-equal (redex-match? tglc β (term (((addr 1) (*)) ·))) #t)
-  ;(test-equal (redex-match? tglc r-bar (term (RES ARG ·))) #t))
-  (test-equal (term (collect-blame (RES ·) (((addr 1) (* * *)) ·) ((addr 1) RES)))
-              (term (* ·))))
+  (test-equal (term (collect-blame · · (int 1))) (term ((int 1))))
+  (test-equal (term (collect-blame · · *)) (term ()))
+  (test-equal (term (lookup-β (((addr 1) (* * *)) ·) (addr 1))) (term (* * *)))
+  (test-equal (term (collect-blame · (((addr 1) ((ref 5 (int 5)) *)) ·) ((addr 1) DEREF)))
+              (term ((int 5)))))
 
 (module+ test
   (test-equal (term (T-to-S *)) (term *))
