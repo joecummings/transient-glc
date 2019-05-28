@@ -3,7 +3,7 @@
 (require redex)
 (require "tglc-def.rkt" "main.rkt" "blame.rkt")
 
-(provide T-to-S ▹ ∼ lookup-Γ ↝ fresh-l)
+(provide T-to-S ▹ ∼ lookup-Γ ↝ fresh-l extend-Γ)
 
 (default-language tglc)
 
@@ -52,10 +52,14 @@
 (define-metafunction tglc
   lookup-Γ : Γ x -> T
   [(lookup-Γ ((: x T) (: x_1 T_1) ...  Γ) x) T]
-  ;[(lookup-Γ ((: x_1 T_1) ... (: x T)... Γ) x) T]
   [(lookup-Γ ((: x_1 T_1) ... (: x T) Γ) x) T]
   [(lookup-Γ ((: x_1 T_1) ... (: x T) (: x_2 T_2) Γ) x) T]
+  [(lookup-Γ ((: x_1 T_1) ... (x T)) x) T]
   [(lookup-Γ any_1 any_2) ,(error 'lookup "not found: ~e in Γ ~e" (term any_2) (term any_1))])
+
+(define-metafunction tglc
+  extend-Γ : Γ (: x T) -> Γ
+  [(extend-Γ ((: x_1 T_1) ... ·) (: x T)) ((: x T) (: x_1 T_1) ... ·)])
 
 (define-metafunction tglc
   fresh-l : l -> l
@@ -81,7 +85,7 @@
     --------------------------------------------------------------------------------- "addition"
     (↝ Γ (+ es_1 es_2) l ( + (:: e_1 (⇒ l_2 T_1 int)) (:: e_2 (⇒ l_4 T_2 int))) int l_4)]
   
-  [ (↝ ((: f (→ T_1 T_2)) (: x T_1) Γ) es l e_1 T_3 l_1) (∼ T_2 T_3)
+  [ (↝ (extend-Γ (extend-Γ Γ (: f (→ T_1 T_2))) (: x T_1)) es l e_1 T_3 l_1) (∼ T_2 T_3)
    ------------------------------------------------------------------------------------ "functions"
    (↝ Γ (→ (fun f (: x T_1)) (T_2 es)) l
       (fun f (x) ,(let ([x (term (⇓ x ((T-to-S T_1) f ARG)))])` e_1)) (→ T_1 T_2) l_1) ]

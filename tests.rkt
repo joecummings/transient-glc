@@ -78,7 +78,11 @@
 (module+ test
   (test-equal (term (lookup-Γ ((: x int) ·) x)) (term int))
   (test-equal (term (lookup-Γ ((: x int) (: y int)·) y)) (term int))
+  (test-equal (term (lookup-Γ ((: f (→ int *)) (: x int) (: y int) ·) y)) (term int))
   )
+
+(module+ test
+  (test-equal (term (extend-Γ ((: x int) ·) (: y int))) (term ((: y int) (: x int) ·))))
 
 (module+ test
   (test-judgment-holds
@@ -89,7 +93,13 @@
    (↝ · (ref 42) 0 (ref 42) (ref int) 0))
   (test-judgment-holds
    (↝ ((: x int) (: y int) ·) (+ x y) 0
-      (+ (:: x (⇒ 1 int int)) (:: y (⇒ 2 int int))) int 2)))
+      (+ (:: x (⇒ 1 int int)) (:: y (⇒ 2 int int))) int 2))
+  ;; so this passes, but ;,(let ([x (term (⇓ x ((T-to-S int) f ARG)))])`
+  ;; disappears but I'm not sure if this is supposed to happen
+  (test-judgment-holds
+   (↝ ((: y int) ·) (→ (fun f (: x int)) (* y)) 0
+      (fun f (x) y) (→ int *) 0))
+  )
 
 (module+ test
   (test-equal (term (fresh-l 42)) (term 43)))
