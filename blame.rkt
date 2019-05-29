@@ -53,11 +53,14 @@
     (where T_1 (toT L_1)) (where T_2 (toT L_2))])
 
 (define-metafunction tglc
-  resolve : σ v (L ...) -> (q ...)
-  [(resolve any_1 any_2 ((⊥ l) ... )) (l ... (resolve any_1 any_2 ,(rest (term ((⊥ l) ... )))))]
-  [(resolve any_1 any_2 (L_1 ... )) ((label L_1) ... (resolve any_1 any_2 ,(rest (term (L_1 ...)))))
-    (where #f (hastype any_1 any_2 (toT (toT L_1))))]
-  [(resolve any_1 any_2 (L_1 ... )) ((label L_1) ... (resolve any_1 any_2 ,(rest (term (L_1 ...)))))]
+  resolve : σ v L-bar -> (q ...)
+  [(resolve any_1 any_2 ((⊥ l) L-bar_1)) 
+    (l (resolve any_1 any_2 L-bar_1))]
+  [(resolve any_1 any_2 (L_1 L-bar_1 )) 
+    ((label L_1) (resolve any_1 any_2 L-bar_1))
+    (where #f (hastype any_1 any_2 (toT L_1)))]
+  [(resolve any_1 any_2 (L_1 L-bar_1)) 
+    ((label L_1) (resolve any_1 any_2 L-bar_1))]
   [(resolve any_1 any_2 ·) ()])
 
 ;; updates address a in the blame map if present (have have multiple 'a' point to list of b's
