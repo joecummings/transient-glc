@@ -94,15 +94,14 @@
   (test-judgment-holds
    (↝ ((: x int) (: y int) ·) (+ x y) 0
       (+ (:: x (⇒ 1 int int)) (:: y (⇒ 2 int int))) int 2))
-  ;; so this passes, but ;,(let ([x (term (⇓ x ((T-to-S int) f ARG)))])`
-  ;; disappears but I'm not sure if this is supposed to happen
   (test-judgment-holds
-   (↝ ((: y int) ·) (→ (fun f (: x int)) (* y)) 0
-      (fun f (x) y) (→ int *) 0))
+   (↝ ((: y int) ·) (→ (fun f (: x int)) (int y)) 0
+      (fun f (x) (app (fun f (x) y) (⇓ x (int f ARG)))) (→ int int) 0))
   )
 
 (module+ test
   (test-equal (term (fresh-l 42)) (term 43)))
+
 
 (module+ test
   (test-judgment-holds
