@@ -72,6 +72,12 @@
   (test-equal (term (T-to-S (ref int))) (term ref)))
 
 (module+ test
+  (test-equal (term (toT *)) (term *))
+  (test-equal (term (toT (int 1))) (term int))
+  (test-equal (term (toT (ref 1 *))) (term (ref *)))
+  (test-equal (term (toT (→ 1 * *))) (term (→ * *))))
+
+(module+ test
   (test-judgment-holds
    (▹ (ref int) (ref int)))
   (test-judgment-holds

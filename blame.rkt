@@ -2,7 +2,7 @@
 (require redex)
 (require "tglc-def.rkt" "types.rkt")
 
-(provide extract label extend-β ρ blame collect-blame lookup-β)
+(provide extract label extend-β ρ blame collect-blame lookup-β toT)
 
 (default-language tglc)
 
@@ -56,7 +56,7 @@
   resolve : σ v L-bar -> (q ...)
   [(resolve any_1 any_2 ((⊥ l) L-bar_1)) 
     (l (resolve any_1 any_2 L-bar_1))]
-  [(resolve any_1 any_2 (L_1 L-bar_1 )) 
+  [(resolve any_1 any_2 (L_1 L-bar_1)) 
     ((label L_1) (resolve any_1 any_2 L-bar_1))
     (where #f (hastype any_1 any_2 (toT L_1)))]
   [(resolve any_1 any_2 (L_1 L-bar_1)) 
