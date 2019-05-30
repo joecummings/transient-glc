@@ -1,7 +1,7 @@
 #lang racket
 (require rackunit)
 (require redex)
-(require "tglc-def.rkt" "main.rkt" "blame.rkt" "translate.rkt")
+(require "tglc-def.rkt" "main.rkt" "blame.rkt" "translate.rkt" "types.rkt")
 
 (module+ test
   (test-equal (redex-match? tglc e (term y)) #t)
@@ -45,13 +45,42 @@
   (test-equal (term (extend (((addr 0) 1) ·) ((fresh-a (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·))))
 
 (module+ test
-  (test-equal (term (extract · (int ∈))) (term (int ∈))))
+  (test-equal (term (extract · (int ∈))) (term (int ∈)))
+  (test-equal (term (extract (RES ·) (→ 1 (int 1) *))) (term *))
+  (test-equal (term (extract (ARG ·) (→ 1 (int 1) *))) (term (int 1)))
+  (test-equal (term (extract (DEREF ·) (ref 1 (int 1)))) (term (int 1)))
+  (test-equal (term (extract (RES ·) *)) (term *)))
+
+(module+ test
+  (test-equal (term (label *)) (term ∈))
+  (test-equal (term (label (int 1))) (term 1))
+  (test-equal (term (label (→ 1 * *))) (term 1))
+  (test-equal (term (label (ref 1 (int 1)))) (term 1))
+  (test-equal (term (label (⊥ 1))) (term 1)))
+
+(module+ test
+  (test-equal (term (collect-blame · · (int 1))) (term ((int 1))))
+  (test-equal (term (collect-blame · · *)) (term ()))
+  (test-equal (term (lookup-β (((addr 1) (* * *)) ·) (addr 1))) (term (* * *)))
+  (test-equal (term (collect-blame · (((addr 1) ((ref 5 (int 5)) *)) ·) ((addr 1) DEREF)))
+              (term ((int 5)))))
 
 (module+ test
   (test-equal (term (T-to-S *)) (term *))
   (test-equal (term (T-to-S int)) (term int))
   (test-equal (term (T-to-S (→ int *))) (term →))
   (test-equal (term (T-to-S (ref int))) (term ref)))
+
+(module+ test
+  (test-equal (term (L-to-T *)) (term *))
+  (test-equal (term (L-to-T (int 1))) (term int))
+  (test-equal (term (L-to-T (ref 1 *))) (term (ref *)))
+  (test-equal (term (L-to-T (→ 1 * *))) (term (→ * *))))
+
+(module+ test
+  (test-equal (term (resolve · 1 ((int 1) ·))) (term (1 ·)))
+  (test-equal (term (resolve · 1 ((⊥ 1) ·))) (term (1 ·)))
+  (test-equal (term (resolve · 1 ((ref 1 (int 2)) ·))) (term (1 ·))))
 
 (module+ test
   (test-judgment-holds

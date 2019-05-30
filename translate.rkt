@@ -1,7 +1,7 @@
 #lang racket
 
 (require redex)
-(require "tglc-def.rkt" "main.rkt" "blame.rkt")
+(require "tglc-def.rkt")
 
 (provide T-to-S ▹ ∼ lookup-Γ ↝ extend-Γ fresh-l)
 
