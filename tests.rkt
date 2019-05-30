@@ -72,10 +72,15 @@
   (test-equal (term (T-to-S (ref int))) (term ref)))
 
 (module+ test
-  (test-equal (term (toT *)) (term *))
-  (test-equal (term (toT (int 1))) (term int))
-  (test-equal (term (toT (ref 1 *))) (term (ref *)))
-  (test-equal (term (toT (→ 1 * *))) (term (→ * *))))
+  (test-equal (term (L-to-T *)) (term *))
+  (test-equal (term (L-to-T (int 1))) (term int))
+  (test-equal (term (L-to-T (ref 1 *))) (term (ref *)))
+  (test-equal (term (L-to-T (→ 1 * *))) (term (→ * *))))
+
+(module+ test
+  (test-equal (term (resolve · 1 ((int 1) ·))) (term (1 ·)))
+  (test-equal (term (resolve · 1 ((⊥ 1) ·))) (term (1 ·)))
+  (test-equal (term (resolve · 1 ((ref 1 (int 2)) ·))) (term (1 ·))))
 
 (module+ test
   (test-judgment-holds

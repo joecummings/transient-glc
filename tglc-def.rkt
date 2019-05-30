@@ -29,10 +29,12 @@
   (q ::= l ∈) ; optional labels
   (r ::= RES ARG DEREF) ; tags
   (r-bar ::= · (r ... r-bar)) ; list of tags
+
+  (weird-L ::= · (q ... weird-L))
  
   (E ::= hole (app E e) (app v E) (+ E e) (+ v E)
      (ref E) (! E) (:= E e) (:: E cast-e) (⇓ E (S e r)) (⇓ v (S E r)))  ; E 
-  (ς ::= (e σ β) (BLAME (q ...)))
+  (ς ::= (e σ β) (BLAME weird-L))
   #:binding-forms
   (λ (x) e #:refers-to x))
 
