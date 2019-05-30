@@ -102,8 +102,8 @@
    ----------------------------------"check succeed v != a"
    (-→ ((⇓ v (S a r)) σ β) (v σ β))]
   
-  ;[(where #f (hastype σ v S)) 
-  ; -------------------------------------------"check fail blame"
-  ; (-→ ((⇓ v (S a r)) σ β) ((blame σ v a r β)))]
+  [(where #f (hastype σ v S)) 
+   -------------------------------------------"check fail blame"
+   (-→ ((⇓ v (S a r)) σ β) ((blame σ v a r β)))]
   )
 
