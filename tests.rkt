@@ -105,7 +105,13 @@
     (∼ (→ int *) (→ int *))))
 
 (module+ test
-  (test-equal (term (lookup-Γ ((: x int) ·) x)) (term int)))
+  (test-equal (term (lookup-Γ ((: x int) ·) x)) (term int))
+  (test-equal (term (lookup-Γ ((: x int) (: y int)·) y)) (term int))
+  (test-equal (term (lookup-Γ ((: f (→ int *)) (: x int) (: y int) ·) y)) (term int))
+  )
+
+(module+ test
+  (test-equal (term (extend-Γ ((: x int) ·) (: y int))) (term ((: y int) (: x int) ·))))
 
 (module+ test
   (test-judgment-holds
@@ -113,10 +119,18 @@
   (test-judgment-holds
    (↝ ((: x int) ·) x 0 x int 0))
   (test-judgment-holds
-   (↝ · (ref 42) 0 (ref 42) (ref int) 0)))
+   (↝ · (ref 42) 0 (ref 42) (ref int) 0))
+  (test-judgment-holds
+   (↝ ((: x int) (: y int) ·) (+ x y) 0
+      (+ (:: x (⇒ 1 int int)) (:: y (⇒ 2 int int))) int 2))
+  (test-judgment-holds
+   (↝ ((: y int) ·) (→ (fun f (: x int)) (int y)) 0
+      (fun f (x) (app (fun f (x) y) (⇓ x (int f ARG)))) (→ int int) 0))
+  )
 
 (module+ test
   (test-equal (term (fresh-l 42)) (term 43)))
+
 
 (module+ test
   (test-judgment-holds
