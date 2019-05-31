@@ -24,11 +24,9 @@
 
   (T ::= int (→ T T) * (ref T)) ; types
   (L ::= (int q) (→ q L L) (ref q L) * (⊥ l)) ; labelled types
-  (L-bar ::= · (L ... L-bar))
   (S ::= int → ref *) ; type tags
   (q ::= l ∈) ; optional labels
   (r ::= RES ARG DEREF) ; tags
-  (r-bar ::= · (r ... r-bar)) ; list of tags
 
   (weird-L ::= · (q ... weird-L))
  
