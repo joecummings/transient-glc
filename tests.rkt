@@ -59,7 +59,9 @@
   (test-equal (term (label (⊥ 1))) (term 1)))
 
 (module+ test
-  (test-equal (term (lookup-β (((addr 1) * * *) ·) (addr 1))) (term (* * *)))
+  (test-equal (term (lookup-β (((addr 1) * * *) ·) (addr 1))) (term (* * *))))
+
+(module+ test
   (test-equal (term (collect-blame · (int 1))) (term ((int 1))))
   (test-equal (term (collect-blame · *)) (term ()))
   (test-equal (term (collect-blame (((addr 1) (ref 5 (int 5)) *) ·) ((addr 1) DEREF)))
@@ -78,9 +80,19 @@
   (test-equal (term (L-to-T (→ 1 * *))) (term (→ * *))))
 
 (module+ test
-  (test-equal (term (resolve · 1 (int 1))) (term (1 ·)))
   (test-equal (term (resolve · 1 (⊥ 1))) (term (1 ·)))
-  (test-equal (term (resolve · 1 (ref 1 (int 2)))) (term (1 ·))))
+  (test-equal (term (resolve · 1 (int 1))) (term (1 ·)))
+  (test-equal (term (resolve · 1 (ref 1 (int 2)))) (term (1 ·)))
+  (test-equal (term (resolve · 1)) (term ·)))
+
+(module+ test
+  (test-equal (term (extend-β (((addr 1) (int 1)) ·) ((addr 1) *))) (term (((addr 1) (int 1) *) ·))))
+
+(module+ test
+  (test-equal (term (ρ (((addr 1) (int 1)) ·) (addr 1) ((addr 0) DEREF))) (term (((addr 1) (int 1) ((addr 0) DEREF)) ·))))
+
+(module+ test
+  (test-equal (term (blame · 1 (addr 1) DEREF (((addr 1) (ref 1 *)) ·)))  (term (BLAME ·))))
 
 (module+ test
   (test-judgment-holds

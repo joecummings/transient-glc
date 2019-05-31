@@ -25,7 +25,7 @@
 (define-metafunction tglc
   lookup-β : β a -> (b ...)
   [(lookup-β ((a_1 b_1 ...) ... (a b ...) (a_2 b_2 ...) ... β) a) (b ...)]
-  [(lookup-β any_1 any_2) ,(error 'lookup-β "not found: ~e" (term any_1))])
+  [(lookup-β any_1 any_2) ,(error 'lookup-β "not found: ~e" (term any_2))])
 
 (define-metafunction tglc
   collect-blame : r ... β b -> (L ...)
@@ -74,6 +74,10 @@
 
 (define-metafunction tglc
   blame : σ v a r β -> ς
-  [(blame any_1 any_2 any_3 any_4 any_5) (BLAME q-bar)
-    (where L-bar (collect-blame any_4 any_5 (any_3 any_4)))
-    (where q-bar (resolve any_1 any_2 L-bar))])
+  [(blame any_1 any_2 any_3 any_4 any_5) (BLAME weird-L)
+    (where (b_1 ...) (lookup-β any_5 any_3))
+    (where (L_1 ...) 
+      ,(set-union
+        (first
+          (term ((collect-blame any_4 any_5 b_1) ...)))))
+    (where weird-L (resolve any_1 any_2 L_1 ...))])
