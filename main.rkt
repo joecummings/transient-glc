@@ -84,7 +84,7 @@
 
   [(where #t (hastype σ v T_2)) (where a v)
    -------------------------------------------------"cast succeed v = a"
-   (-→ ((:: v (⇒ l T_1 T_2)) σ β) (v σ (ρ β a (cast (⇒ l T_1 T_2)))))]
+   (-→ ((:: v (⇒ l T_1 T_2)) σ β) (v σ (ϱ β a (cast (⇒ l T_1 T_2)))))]
 
   [(where #t (hastype σ v T_2))
    ----------------------------------"cast succeed v != a"
@@ -96,7 +96,7 @@
 
   [(where #t (hastype σ v S)) (where a_1 v)
    ---------------------------------------------"check succeed v = a"
-   (-→ ((⇓ v (S a r)) σ β) (v σ (ρ β a_1 (a r))))]
+   (-→ ((⇓ v (S a r)) σ β) (v σ (ϱ β a_1 (a r))))]
 
   [(where #t (hastype σ v S))
    ----------------------------------"check succeed v != a"

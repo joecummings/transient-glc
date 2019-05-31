@@ -89,7 +89,7 @@
   (test-equal (term (extend-β (((addr 1) (int 1)) ·) ((addr 1) *))) (term (((addr 1) (int 1) *) ·))))
 
 (module+ test
-  (test-equal (term (ρ (((addr 1) (int 1)) ·) (addr 1) ((addr 0) DEREF))) (term (((addr 1) (int 1) ((addr 0) DEREF)) ·))))
+  (test-equal (term (ϱ (((addr 1) (int 1)) ·) (addr 1) ((addr 0) DEREF))) (term (((addr 1) (int 1) ((addr 0) DEREF)) ·))))
 
 (module+ test
   (test-equal (term (blame · 1 (addr 1) DEREF (((addr 1) (ref 1 *)) ·)))  (term (BLAME ·))))
@@ -160,13 +160,10 @@
           (:: (ref 5) (⇒ 1 (ref int) (ref int)))) int 2))
   ;; "apps"
   (test-judgment-holds
-   (↝ ((: y int) ·) ((→ (fun f (: x int)) (int y)) 42) 0
+   (↝ ((: y int) ·) (app (→ (fun f (: x int)) (int y)) 42) 0
       (app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
         (:: (fun f (x) (app (fun f (x) y) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int))))  int 2))
  )
-
-
-
 
 (module+ test
   (test-equal (term (fresh-l 42)) (term (43 42)))
