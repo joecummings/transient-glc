@@ -204,6 +204,23 @@
    
   )
 
+(define-metafunction tglc
+  blame-not-empty? : ς -> #t or #f
+  [(blame-not-empty? (BLAME (q ...))) #t]
+  [(blame-not-empty? (BLAME ·)) #f])
 
-(module+ test
-  (test-results))
+(redex-check tglc ς
+  (let ([target (redex-match? tglc ((⇓ v (S a r)) σ β) (term ς))])
+      (cond
+        [(not target) #t]
+        [else 
+          (let ([de-target (term (decompose-ς ς))])
+            (if (not (term (hastype ,(first de-target) ,(second de-target) ,(third de-target))))
+                      (and (test-judgment-holds (-→ ς (BLAME weird-L))) 
+                           (term (blame-not-empty? (BLAME ·))))
+                          ;;;  (apply-reduction-relation -→ (term ς)))))
+                      #t))]))
+  #:attempts 1000000)
+
+;;; (module+ test
+;;;   (test-results))

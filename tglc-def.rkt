@@ -1,7 +1,7 @@
 #lang racket
 (require redex)
 
-(provide tglc)
+(provide tglc decompose-ς)
 
 (define-language tglc
   (e ::= x v (fun f (x) e) (app e e) (+ e e)
@@ -35,4 +35,8 @@
   (ς ::= (e σ β) (BLAME weird-L))
   #:binding-forms
   (λ (x) e #:refers-to x))
+
+  (define-metafunction tglc
+   decompose-ς : ς -> (σ v S)
+   [(decompose-ς ((⇓ v (S a r)) any_1 any_2)) (any_1 v S)])
 
