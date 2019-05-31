@@ -160,12 +160,9 @@
           (:: (ref 5) (⇒ 1 (ref int) (ref int)))) int 2))
   ;; "apps"
   (test-judgment-holds
-   (↝ · ((→ (fun f (: x int)) (int x)) 42) 0
-      (app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int f0 RES)))
-        (:: (app (fun f (x) x) (⇓ x (int f ARG))) (⇒ 1 (→ int int) (→ int int))))  int 2))
-
-  #;(app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
-           (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int)))) 
+   (↝ ((: y int) ·) ((→ (fun f (: x int)) (int y)) 42) 0
+      (app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
+        (:: (fun f (x) (app (fun f (x) y) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int))))  int 2))
  )
 
 
