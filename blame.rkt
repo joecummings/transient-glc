@@ -2,7 +2,7 @@
 (require redex)
 (require "tglc-def.rkt" "types.rkt" "translate.rkt")
 
-(provide extract label extend-β ρ blame resolve collect-blame lookup-β L-to-T)
+(provide extract label extend-β ϱ blame resolve collect-blame lookup-β L-to-T)
 
 (default-language tglc)
 
@@ -69,8 +69,8 @@
    ((a_1 b_1 ...) ... (a b_2 ... b_4) (a_3 b_3 ...) ... β)])
 
 (define-metafunction tglc
-  ρ : β a b -> β
-  [(ρ β a_1 b) (extend-β β (a_1 b))])
+  ϱ : β a b -> β
+  [(ϱ β a_1 b) (extend-β β (a_1 b))])
 
 (define-metafunction tglc
   blame : σ v a r β -> ς

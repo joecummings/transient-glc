@@ -89,7 +89,7 @@
   (test-equal (term (extend-β (((addr 1) (int 1)) ·) ((addr 1) *))) (term (((addr 1) (int 1) *) ·))))
 
 (module+ test
-  (test-equal (term (ρ (((addr 1) (int 1)) ·) (addr 1) ((addr 0) DEREF))) (term (((addr 1) (int 1) ((addr 0) DEREF)) ·))))
+  (test-equal (term (ϱ (((addr 1) (int 1)) ·) (addr 1) ((addr 0) DEREF))) (term (((addr 1) (int 1) ((addr 0) DEREF)) ·))))
 
 (module+ test
   (test-equal (term (blame · 1 (addr 1) DEREF (((addr 1) (ref 1 *)) ·)))  (term (BLAME ·))))
@@ -159,13 +159,23 @@
      (app (fun f (xx0) (⇓ (! xx0) (int xx0 DEREF)))
           (:: (ref 5) (⇒ 1 (ref int) (ref int)))) int 2))
   ;; "apps"
-  (test-judgment-holds
-   (↝ · ((→ (fun f (: x int)) (int x)) 42) 0
-      (app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int f0 RES)))
-        (:: (app (fun f (x) x) (⇓ x (int f ARG))) (⇒ 1 (→ int int) (→ int int))))  int 2))
+  (test-equal (redex-match? tglc e (term 
+                                      (app 
+                                        (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES))) 
+                                        (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int)))))) #t)
+  (test-equal (redex-match? tglc e (term (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int))))) #t)
+  (test-equal (redex-match? tglc T (term int)) #t)
+  (test-equal (redex-match? tglc n (term 2)) #t)
 
-  #;(app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
-           (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int)))) 
+  (test-judgment-holds
+   (↝ · (app (→ (fun f (: x int)) (int x)) 42) 0
+      (app 
+        (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
+        (:: (app (fun f (x) x) (⇓ x (int f ARG))) (⇒ 1 (→ int int) (→ int int))))
+        int 2))
+
+  ;(app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
+  ;         (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int)))) 
  )
 
 
