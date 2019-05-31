@@ -159,27 +159,11 @@
      (app (fun f (xx0) (⇓ (! xx0) (int xx0 DEREF)))
           (:: (ref 5) (⇒ 1 (ref int) (ref int)))) int 2))
   ;; "apps"
-  (test-equal (redex-match? tglc e (term 
-                                      (app 
-                                        (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES))) 
-                                        (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int)))))) #t)
-  (test-equal (redex-match? tglc e (term (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int))))) #t)
-  (test-equal (redex-match? tglc T (term int)) #t)
-  (test-equal (redex-match? tglc n (term 2)) #t)
-
   (test-judgment-holds
-   (↝ · (app (→ (fun f (: x int)) (int x)) 42) 0
-      (app 
-        (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
-        (:: (app (fun f (x) x) (⇓ x (int f ARG))) (⇒ 1 (→ int int) (→ int int))))
-        int 2))
-
-  ;(app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
-  ;         (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int)))) 
+   (↝ ((: y int) ·) (app (→ (fun f (: x int)) (int y)) 42) 0
+      (app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
+        (:: (fun f (x) (app (fun f (x) y) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int))))  int 2))
  )
-
-
-
 
 (module+ test
   (test-equal (term (fresh-l 42)) (term (43 42)))
