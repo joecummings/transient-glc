@@ -123,25 +123,58 @@
   )
 
 (module+ test
-  (test-equal (term (extend-Γ ((: x int) ·) (: y int))) (term ((: y int) (: x int) ·))))
+  (test-equal (term (extend-Γ ((: x int) ·) (: y int))) (term ((: y int) (: x int) ·)))
+  (test-equal (term (extend-Γ · (: x int))) (term ((: x int) ·)))
+  )
+
 
 (module+ test
+  ;; "naturals"
   (test-judgment-holds
    (↝ · 42 0 42 int 0))
+  ;; "vars"
   (test-judgment-holds
    (↝ ((: x int) ·) x 0 x int 0))
+  ;; "refs"
   (test-judgment-holds
    (↝ · (ref 42) 0 (ref 42) (ref int) 0))
+  ;; "addition"
   (test-judgment-holds
    (↝ ((: x int) (: y int) ·) (+ x y) 0
-      (+ (:: x (⇒ 1 int int)) (:: y (⇒ 2 int int))) int 2))
+      (+ (:: x (⇒ 0 int int)) (:: y (⇒ 1 int int))) int 2))
+  ;; "functions"
   (test-judgment-holds
    (↝ ((: y int) ·) (→ (fun f (: x int)) (int y)) 0
       (fun f (x) (app (fun f (x) y) (⇓ x (int f ARG)))) (→ int int) 0))
-  )
+  (test-judgment-holds
+   (↝ · (→ (fun f (: x int)) (int x)) 0
+      (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (→ int int) 0))
+  ;; "assignments"
+  (test-judgment-holds
+   (↝ · (:= (ref 2) 42) 0
+      (:= (:: (ref 2) (⇒ 0 (ref int) (ref int))) (:: 42 (⇒ 1 int int))) int 2))
+  ;; "derefs"
+  (test-judgment-holds
+   (↝ · (! (ref 5)) 0
+     (app (fun f (xx0) (⇓ (! xx0) (int xx0 DEREF)))
+          (:: (ref 5) (⇒ 1 (ref int) (ref int)))) int 2))
+  ;; "apps"
+  (test-judgment-holds
+   (↝ · ((→ (fun f (: x int)) (int x)) 42) 0
+      (app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int f0 RES)))
+        (:: (app (fun f (x) x) (⇓ x (int f ARG))) (⇒ 1 (→ int int) (→ int int))))  int 2))
+
+  #;(app (fun f (ff0) (⇓ (app ff0 (:: 42 (⇒ 1 int int))) (int ff0 RES)))
+           (:: (fun f (x) (app (fun f (x) x) (⇓ x (int f ARG)))) (⇒ 1 (→ int int) (→ int int)))) 
+ )
+
+
+
 
 (module+ test
-  (test-equal (term (fresh-l 42)) (term 43)))
+  (test-equal (term (fresh-l 42)) (term (43 42)))
+  (test-equal (term (fresh-x 42)) (term (43 xx42)))
+  (test-equal (term (fresh-f 42)) (term (43 ff42))))
 
 
 (module+ test
