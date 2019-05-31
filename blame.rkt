@@ -2,17 +2,17 @@
 (require redex)
 (require "tglc-def.rkt" "types.rkt" "translate.rkt")
 
-(provide extract label extend-β ρ blame collect-blame resolve lookup-β L-to-T)
+(provide extract label extend-β ρ blame resolve collect-blame lookup-β L-to-T)
 
 (default-language tglc)
 
 (define-metafunction tglc
-  extract : r-bar L -> L
-  [(extract · L) L]
-  [(extract (RES ... r-bar_1) (→ q L_1 L_2)) (extract r-bar_1 L_2)]
-  [(extract (ARG ... r-bar_1) (→ q L_1 L_2)) (extract r-bar_1 L_1)]
-  [(extract (DEREF ... r-bar_1) (ref q L_1)) (extract r-bar_1 L_1)]
-  [(extract (r ... r-bar_1) *) *])
+  extract : r ... L -> L
+  [(extract L) L]
+  [(extract RES r_1 ... (→ q L_1 L_2)) (extract r_1 ... L_2)]
+  [(extract ARG r_1 ... (→ q L_1 L_2)) (extract r_1 ... L_1)]
+  [(extract DEREF r_1 ... (ref q L_1)) (extract r_1 ... L_1)]
+  [(extract r_1 r_2 ... *) *])
 
 (define-metafunction tglc
   label : L -> q
@@ -24,24 +24,22 @@
 
 (define-metafunction tglc
   lookup-β : β a -> (b ...)
-  [(lookup-β ((a_1 (b_1 ...)) ... (a (b ...)) (a_2 (b_2 ...)) ... β) a) (b ...)]
+  [(lookup-β ((a_1 b_1 ...) ... (a b ...) (a_2 b_2 ...) ... β) a) (b ...)]
   [(lookup-β any_1 any_2) ,(error 'lookup-β "not found: ~e" (term any_1))])
 
 (define-metafunction tglc
-  collect-blame : r-bar β b -> (L ...)
-  [(collect-blame any_1 any_2 L)
+  collect-blame : r ... β b -> (L ...)
+  [(collect-blame r_1 ... any_2 L)
     (L_1)
-    (where L_1 (extract any_1 L)) (where l (label L_1))]
-  [(collect-blame any_1 any_2 L)
+    (where L_1 (extract r_1 ... L)) (where l (label L_1))]
+  [(collect-blame r_1 ... any_2 L)
     ()
-    (where L_1 (extract any_1 L)) (where ∈ (label L_1))]
-  [(collect-blame any_1 any_2 (a r))
-    ,(set-union 
+    (where L_1 (extract r_1 ... L)) (where ∈ (label L_1))]
+  [(collect-blame r_1 ... any_2 (a r))
+    ,(set-union
       (first
-        (map
-          (lambda (bs)
-            (term (collect-blame ,(list (term r) (term any_1)) any_2 ,bs)))
-          (term (lookup-β any_2 a)))))])
+        (term ((collect-blame r r_1 ... any_2 b_1) ...))))
+    (where (b_1 ...) (lookup-β any_2 a))])
 
 (define-metafunction tglc
   L-to-T : L -> T
@@ -53,22 +51,22 @@
     (where T_1 (L-to-T L_1)) (where T_2 (L-to-T L_2))])
 
 (define-metafunction tglc
-  resolve : σ v L-bar -> weird-L
-  [(resolve any_1 any_2 ((⊥ l) L-bar_1)) 
-    (l (resolve any_1 any_2 L-bar_1))]
-  [(resolve any_1 any_2 (L_1 L-bar_1)) 
-    ((label L_1) (resolve any_1 any_2 L-bar_1))
+  resolve : σ v L ... -> weird-L
+  [(resolve any_1 any_2 (⊥ l) L_1 ...) 
+    (l (resolve any_1 any_2 L_1 ...))]
+  [(resolve any_1 any_2 L_1 L_2 ...) 
+    ((label L_1) (resolve any_1 any_2 L_2 ...))
     (where #f (hastype any_1 any_2 (T-to-S (L-to-T L_1))))]
-  [(resolve any_1 any_2 (L_1 L-bar_1)) 
-    ((label L_1) (resolve any_1 any_2 L-bar_1))]
-  [(resolve any_1 any_2 ·) ·])
+  [(resolve any_1 any_2 L_1 L_2 ...) 
+    ((label L_1) (resolve any_1 any_2 L_2 ...))]
+  [(resolve any_1 any_2) ·])
 
 ;; updates address a in the blame map if present (have have multiple 'a' point to list of b's
 ;; QUESTION: this will just put all element in the list, instead of the union-set of the elements
 (define-metafunction tglc
   extend-β : β (a b_4) -> β
-  [(extend-β ((a_1 (b_1 ...)) ... (a (b_2 ...)) (a_3 (b_3 ...)) ... β) (a b_4))
-   ((a_1 (b_1 ...)) ... (a ( b_2 ... b_4)) (a_3 (b_3 ...)) ... β)])
+  [(extend-β ((a_1 b_1 ...) ... (a b_2 ...) (a_3 b_3 ...) ... β) (a b_4))
+   ((a_1 b_1 ...) ... (a b_2 ... b_4) (a_3 b_3 ...) ... β)])
 
 (define-metafunction tglc
   ρ : β a b -> β

@@ -45,11 +45,11 @@
   (test-equal (term (extend (((addr 0) 1) ·) ((fresh-a (((addr 0) 1) ·)) 2))) (term (((addr 1) 2) ((addr 0) 1) ·))))
 
 (module+ test
-  (test-equal (term (extract · (int ∈))) (term (int ∈)))
-  (test-equal (term (extract (RES ·) (→ 1 (int 1) *))) (term *))
-  (test-equal (term (extract (ARG ·) (→ 1 (int 1) *))) (term (int 1)))
-  (test-equal (term (extract (DEREF ·) (ref 1 (int 1)))) (term (int 1)))
-  (test-equal (term (extract (RES ·) *)) (term *)))
+  (test-equal (term (extract (int ∈))) (term (int ∈)))
+  (test-equal (term (extract RES ARG (→ 1 (int 1) *))) (term *))
+  (test-equal (term (extract ARG (→ 1 (int 1) *))) (term (int 1)))
+  (test-equal (term (extract DEREF (ref 1 (int 1)))) (term (int 1)))
+  (test-equal (term (extract RES *)) (term *)))
 
 (module+ test
   (test-equal (term (label *)) (term ∈))
@@ -59,10 +59,10 @@
   (test-equal (term (label (⊥ 1))) (term 1)))
 
 (module+ test
-  (test-equal (term (collect-blame · · (int 1))) (term ((int 1))))
-  (test-equal (term (collect-blame · · *)) (term ()))
-  (test-equal (term (lookup-β (((addr 1) (* * *)) ·) (addr 1))) (term (* * *)))
-  (test-equal (term (collect-blame · (((addr 1) ((ref 5 (int 5)) *)) ·) ((addr 1) DEREF)))
+  (test-equal (term (lookup-β (((addr 1) * * *) ·) (addr 1))) (term (* * *)))
+  (test-equal (term (collect-blame · (int 1))) (term ((int 1))))
+  (test-equal (term (collect-blame · *)) (term ()))
+  (test-equal (term (collect-blame (((addr 1) (ref 5 (int 5)) *) ·) ((addr 1) DEREF)))
               (term ((int 5)))))
 
 (module+ test
@@ -78,9 +78,9 @@
   (test-equal (term (L-to-T (→ 1 * *))) (term (→ * *))))
 
 (module+ test
-  (test-equal (term (resolve · 1 ((int 1) ·))) (term (1 ·)))
-  (test-equal (term (resolve · 1 ((⊥ 1) ·))) (term (1 ·)))
-  (test-equal (term (resolve · 1 ((ref 1 (int 2)) ·))) (term (1 ·))))
+  (test-equal (term (resolve · 1 (int 1))) (term (1 ·)))
+  (test-equal (term (resolve · 1 (⊥ 1))) (term (1 ·)))
+  (test-equal (term (resolve · 1 (ref 1 (int 2)))) (term (1 ·))))
 
 (module+ test
   (test-judgment-holds
@@ -156,12 +156,12 @@
        (4 · ·)))
   ;"check succeed v != a"
   (test-judgment-holds 
-   (-→ ((⇓ 42 (int (addr 0) RES)) (((addr 0) 37)·) ·)
+   (-→ ((⇓ 42 (int (addr 0) RES)) (((addr 0) 37) ·) ·)
        (42 (((addr 0) 37)·) ·)))
   ;"cast succeed v = a"
   (test-judgment-holds
-   (-→ ((:: (addr 0) (⇒ 123 int *)) (((addr 0) 11) ·) (((addr 0) ((int 144))) ·))
-       ((addr 0) (((addr 0) 11) ·) (((addr 0) ((int 144) (int ∈))) ·))))
+   (-→ ((:: (addr 0) (⇒ 123 int *)) (((addr 0) 11) ·) (((addr 0) (int 144)) ·))
+       ((addr 0) (((addr 0) 11) ·) (((addr 0) (int 144) (int ∈)) ·))))
    
   )
 
