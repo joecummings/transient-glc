@@ -18,7 +18,7 @@
   (σ ::= · ((a h) ... σ)) ; heaps
   (h ::= (λ (x) e) v) ; heap values
   
-  (β ::= · ((a (b ...)) ... β)) ; blame sets
+  (β ::= · ((a b ...) ... β)) ; blame sets
   (b ::= (a r) L) ; blame elems
   (l ::= natural) ; blame labels
 

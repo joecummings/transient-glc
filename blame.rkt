@@ -24,30 +24,22 @@
 
 (define-metafunction tglc
   lookup-β : β a -> (b ...)
-  [(lookup-β ((a_1 (b_1 ...)) ... (a (b ...)) (a_2 (b_2 ...)) ... β) a) (b ...)]
+  [(lookup-β ((a_1 b_1 ...) ... (a b ...) (a_2 b_2 ...) ... β) a) (b ...)]
   [(lookup-β any_1 any_2) ,(error 'lookup-β "not found: ~e" (term any_1))])
 
 (define-metafunction tglc
-  collect-blame : r ... β b -> L ...
+  collect-blame : r ... β b -> (L ...)
   [(collect-blame r_1 ... any_2 L)
-    L_1
+    (L_1)
     (where L_1 (extract r_1 ... L)) (where l (label L_1))]
   [(collect-blame r_1 ... any_2 L)
-    ∅
+    ()
     (where L_1 (extract r_1 ... L)) (where ∈ (label L_1))]
   [(collect-blame r_1 ... any_2 (a r))
-    
-
-
-
-
-    (collect-blame (r r_1 ...) any_2 (lookup-β any_2 a)) ...])
-    ;;; ,(set-union 
-    ;;;   (first
-    ;;;     (map
-    ;;;       (lambda (bs)
-    ;;;         (term (collect-blame ,(list (term r) (term r_1 ...)) any_2 ,bs)))
-    ;;;       (term (lookup-β any_2 a)))))])
+    ,(set-union
+      (first
+        (term ((collect-blame r r_1 ... any_2 b_1) ...))))
+    (where (b_1 ...) (lookup-β any_2 a))])
 
 (define-metafunction tglc
   L-to-T : L -> T
@@ -73,8 +65,8 @@
 ;; QUESTION: this will just put all element in the list, instead of the union-set of the elements
 (define-metafunction tglc
   extend-β : β (a b_4) -> β
-  [(extend-β ((a_1 (b_1 ...)) ... (a (b_2 ...)) (a_3 (b_3 ...)) ... β) (a b_4))
-   ((a_1 (b_1 ...)) ... (a ( b_2 ... b_4)) (a_3 (b_3 ...)) ... β)])
+  [(extend-β ((a_1 b_1 ...) ... (a b_2 ...) (a_3 b_3 ...) ... β) (a b_4))
+   ((a_1 b_1 ...) ... (a b_2 ... b_4) (a_3 b_3 ...) ... β)])
 
 (define-metafunction tglc
   ρ : β a b -> β

@@ -59,11 +59,11 @@
   (test-equal (term (label (⊥ 1))) (term 1)))
 
 (module+ test
-  (test-equal (term (collect-blame (int 1))) (term ((int 1)))))
-;;;   (test-equal (term (collect-blame · *)) (term ()))
-;;;   (test-equal (term (lookup-β (((addr 1) (* * *)) ·) (addr 1))) (term (* * *)))
-;;;   (test-equal (term (collect-blame (((addr 1) ((ref 5 (int 5)) *)) ·) ((addr 1) DEREF)))
-;;;               (term ((int 5)))))
+  (test-equal (term (lookup-β (((addr 1) * * *) ·) (addr 1))) (term (* * *)))
+  (test-equal (term (collect-blame · (int 1))) (term ((int 1))))
+  (test-equal (term (collect-blame · *)) (term ()))
+  (test-equal (term (collect-blame (((addr 1) (ref 5 (int 5)) *) ·) ((addr 1) DEREF)))
+              (term ((int 5)))))
 
 (module+ test
   (test-equal (term (T-to-S *)) (term *))
@@ -156,12 +156,12 @@
        (4 · ·)))
   ;"check succeed v != a"
   (test-judgment-holds 
-   (-→ ((⇓ 42 (int (addr 0) RES)) (((addr 0) 37)·) ·)
+   (-→ ((⇓ 42 (int (addr 0) RES)) (((addr 0) 37) ·) ·)
        (42 (((addr 0) 37)·) ·)))
   ;"cast succeed v = a"
   (test-judgment-holds
-   (-→ ((:: (addr 0) (⇒ 123 int *)) (((addr 0) 11) ·) (((addr 0) ((int 144))) ·))
-       ((addr 0) (((addr 0) 11) ·) (((addr 0) ((int 144) (int ∈))) ·))))
+   (-→ ((:: (addr 0) (⇒ 123 int *)) (((addr 0) 11) ·) (((addr 0) (int 144)) ·))
+       ((addr 0) (((addr 0) 11) ·) (((addr 0) (int 144) (int ∈)) ·))))
    
   )
 
