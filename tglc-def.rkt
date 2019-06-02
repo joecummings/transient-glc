@@ -35,8 +35,3 @@
   (ς ::= (e σ β) (BLAME weird-L))
   #:binding-forms
   (λ (x) e #:refers-to x))
-
-  (define-metafunction tglc
-   decompose-ς : ς -> (σ v S)
-   [(decompose-ς ((⇓ v (S a r)) any_1 any_2)) (any_1 v S)])
-

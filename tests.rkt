@@ -209,18 +209,12 @@
   [(blame-not-empty? (BLAME (q ...))) #t]
   [(blame-not-empty? (BLAME ·)) #f])
 
-(redex-check tglc ς
-  (let ([target (redex-match? tglc ((⇓ v (S a r)) σ β) (term ς))])
-      (cond
-        [(not target) #t]
-        [else 
-          (let ([de-target (term (decompose-ς ς))])
-            (if (not (term (hastype ,(first de-target) ,(second de-target) ,(third de-target))))
-                      (and (test-judgment-holds (-→ ς (BLAME weird-L))) 
-                           (term (blame-not-empty? (BLAME ·))))
-                          ;;;  (apply-reduction-relation -→ (term ς)))))
-                      #t))]))
-  #:attempts 1000000)
+(redex-check tglc ((⇓ v (S a r)) σ β)
+  (if (not (term (hastype σ v S)))
+      (and (test-judgment-holds (-→ ((⇓ v (S a r)) σ β) (BLAME weird-L))) 
+           (term (blame-not-empty? (BLAME ·))))
+      #t)
+  #:attempts 1000)
 
 ;;; (module+ test
 ;;;   (test-results))
