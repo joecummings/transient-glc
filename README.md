@@ -1,3 +1,3 @@
-# Transient Gradual Typed Lambda Calculus
+# Transient Gradual Lambda Calculus
 
 > Encoded in PLT Redex
