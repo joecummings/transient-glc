@@ -2,7 +2,7 @@
 (require redex)
 (require "tglc-def.rkt" "types.rkt" "translate.rkt")
 
-(provide extract label extend-β ϱ blame resolve collect-blame lookup-β L-to-T)
+(provide extract label check-dups extend-β ϱ blame resolve collect-blame lookup-β L-to-T)
 
 (default-language tglc)
 
@@ -42,6 +42,26 @@
     (where (b_1 ...) (lookup-β any_2 a))])
 
 (define-metafunction tglc
+  check-dups : a ... -> #t or #f
+  [(check-dups a_!_1 ... a_!_1) #f]
+  [(check-dups a_1 ...) ,(error 'check-dups "found duplicate addr: ~e" (term a))])
+
+(define-metafunction tglc
+  collect-blame-cl : a ... r ... β b  -> (L ...)
+  [(collect-blame-cl a_1 ... r_1 ... any_2 L)
+    (L_1)
+    (where L_1 (extract r_1 ... L)) (where l (label L_1))]
+  [(collect-blame-cl a_1 ... r_1 ... any_2 L)
+    ()
+    (where L_1 (extract r_1 ... L)) (where ∈ (label L_1))]
+  [(collect-blame-cl a_1 ... r_1 ... any_2 (a r))
+    ,(set-union
+      (first
+        (term ((collect-blame-cl a a_1 ... r r_1 ... any_2 b_1) ...))))
+    (where (b_1 ...) (lookup-β any_2 a))
+    (where #f (check-dups a a_1 ...))])
+
+(define-metafunction tglc
   L-to-T : L -> T
   [(L-to-T *) *]
   [(L-to-T (int q)) int]
@@ -66,7 +86,8 @@
 (define-metafunction tglc
   extend-β : β (a b_4) -> β
   [(extend-β ((a_1 b_1 ...) ... (a b_2 ...) (a_3 b_3 ...) ... β) (a b_4))
-   ((a_1 b_1 ...) ... (a b_2 ... b_4) (a_3 b_3 ...) ... β)])
+   ((a_1 b_1 ...) ... (a b_2 ... b_4) (a_3 b_3 ...) ... β)]
+  [(extend-β ((a_1 b_1 ...) ... β) (a b_4)) ((a b_4) (a_1 b_1 ...) ... β)])
 
 (define-metafunction tglc
   ϱ : β a b -> β
@@ -79,7 +100,5 @@
     (where (L_1 ...) 
       ,(set-union
         (first
-          (term ((collect-blame any_4 any_5 b_1) ...)))))
+          (term ((collect-blame-cl any_4 any_5 b_1) ...)))))
     (where weird-L (resolve any_1 any_2 L_1 ...))])
-
-    
