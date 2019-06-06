@@ -1,7 +1,7 @@
 #lang racket
 (require redex)
 
-(provide tglc decompose-ς)
+(provide tglc)
 
 (define-language tglc
   (e ::= x v (fun f (x) e) (app e e) (+ e e)

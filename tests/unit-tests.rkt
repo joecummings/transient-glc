@@ -1,7 +1,7 @@
 #lang racket
 (require rackunit)
 (require redex)
-(require "tglc-def.rkt" "main.rkt" "blame.rkt" "translate.rkt" "types.rkt")
+(require "../tglc-def.rkt" "../main.rkt" "../blame.rkt" "../translate.rkt" "../types.rkt")
 
 (module+ test
   (test-equal (redex-match? tglc e (term y)) #t)
@@ -204,17 +204,5 @@
    
   )
 
-(define-metafunction tglc
-  blame-not-empty? : ς -> #t or #f
-  [(blame-not-empty? (BLAME (q ...))) #t]
-  [(blame-not-empty? (BLAME ·)) #f])
-
-(redex-check tglc ((⇓ v (S a r)) σ β)
-  (if (not (term (hastype σ v S)))
-      (and (test-judgment-holds (-→ ((⇓ v (S a r)) σ β) (BLAME weird-L))) 
-           (term (blame-not-empty? (BLAME ·))))
-      #t)
-  #:attempts 1000)
-
-;;; (module+ test
-;;;   (test-results))
+(module+ test
+  (test-results))
