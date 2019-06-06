@@ -8,22 +8,18 @@
   [(blame-not-empty? (BLAME weird-L)) #t]
   [(blame-not-empty? (BLAME ·)) #f])
 
-(define count 0)
+;;; (define count 0)
 
 (define (reduces-to-blame? ς)
-  (set! count (+ 1 count))
-  (displayln count)
-  (displayln ς)
-  (displayln "-------")
-  (let ([target (with-handlers ([exn:fail? (λ (exn) 'failed)])
-                        (apply-reduction-relation -→ ς))])
   (cond
-    [(equal? 'failed target) #f]
-    [(redex-match? tglc (BLAME weird-L) target) #t]
+    [(equal? 'failed ς) #f]
+    [(redex-match? tglc (BLAME weird-L) ς) #t]
     [else #f])))
 
 (redex-check tglc ((⇓ v (S a r)) σ β) 
-  (if (reduces-to-blame? (term ((⇓ v (S a r)) σ β))) 
-      (term (blame-not-empty? (apply-reduction-relation -→ (term (⇓ v (S a r))))))
+	(let ([target (with-handlers ([exn:fail? (λ (exn) 'failed)])
+										(apply-reduction-relation -→ (term ((⇓ v (S a r)) σ β))))])
+  (if (reduces-to-blame? target) 
+      (term (blame-not-empty? target))
       #t)
   #:attempts 1000000)

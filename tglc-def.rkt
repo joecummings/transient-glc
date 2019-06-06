@@ -5,9 +5,9 @@
 
 (define-language tglc
   (e ::= x v (fun f (x) e) (app e e) (+ e e)
-     (ref e) (! e) (:= e e) (:: e cast-e) (⇓ e (S e r))) ; expr
+     (ref e) (! e) (:= e e) (:: e cast-e) (⇓ e (S e r))) ; target lang expr
   (es ::= x (→ (fun f (: x T)) (T es)) (app es es)
-      (ref es) (! es) (:= es es) n (+ es es))
+      (ref es) (! es) (:= es es) n (+ es es)) ; source lang expr
   (Γ ::= · ((: x T) ... Γ))
   (cast-e := (⇒ l T T) (⇔ l T T))
   (v ::= a n) ; values
