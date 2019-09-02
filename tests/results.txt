@@ -1,0 +1,3 @@
+redex-check: /Users/joecummings/Desktop/northwestern-keep/junior/Tri 3/DPL/transient-glc/tests/unit-tests.rkt:179
+counterexample found after 1 attempt:
+(addr 0)

@@ -55,6 +55,19 @@
   [(extend ((a_1 h_1) ... ·) (a h)) ((a h) (a_1 h_1) ... ·)])
 
 (define-judgment-form tglc
+  #:mode (|-→ I O)
+  #:contract (|-→ (e σ β) ς) ; one state -> different state
+
+  [(where (-→ (e σ β) (e σ β)))
+    -------------------------------------- "context to eval"
+    (|-→ ((in-hole E e) σ β) ((in-hole E e) σ β))]
+  
+  [(where (-→ (e σ β) (BLAME weird-L)))
+    ------------------------------------ "context to BLAME"
+    (|-→ ((in-hole E e) σ β) (BLAME weird-L))]
+)
+
+(define-judgment-form tglc
   #:mode (-→ I O)
   #:contract (-→ (e σ β) ς) ; one state -> different state
 
