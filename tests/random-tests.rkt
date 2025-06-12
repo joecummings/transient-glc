@@ -14,12 +14,12 @@
   (cond
     [(equal? 'failed ς) #f]
     [(redex-match? tglc (BLAME weird-L) ς) #t]
-    [else #f])))
+    [else #f]))
 
 (redex-check tglc ((⇓ v (S a r)) σ β) 
 	(let ([target (with-handlers ([exn:fail? (λ (exn) 'failed)])
 										(apply-reduction-relation -→ (term ((⇓ v (S a r)) σ β))))])
-  (if (reduces-to-blame? target) 
+  (if (reduces-to-blame? target)
       (term (blame-not-empty? target))
-      #t)
+      #t))
   #:attempts 1000000)
